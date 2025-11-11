@@ -13,3 +13,4 @@ C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Application\obj\Debug\net8.0\LMS
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Application\obj\Debug\net8.0\refint\LMS.Application.dll
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Application\obj\Debug\net8.0\LMS.Application.pdb
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Application\obj\Debug\net8.0\ref\LMS.Application.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Application\obj\Debug\net8.0\LMS.Application.sourcelink.json

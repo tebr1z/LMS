@@ -59,3 +59,12 @@ C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\refint\LMS.
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\LMS.API.pdb
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\LMS.API.genruntimeconfig.cache
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\ref\LMS.API.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\LMS.API.sourcelink.json
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\Castle.Core.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Proxies.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\System.Security.Permissions.dll

@@ -9,3 +9,4 @@ C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\LMS.Doma
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\refint\LMS.Domain.dll
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\LMS.Domain.pdb
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\ref\LMS.Domain.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\LMS.Domain.sourcelink.json

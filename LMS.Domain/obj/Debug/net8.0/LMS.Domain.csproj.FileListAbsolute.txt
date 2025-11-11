@@ -1,0 +1,11 @@
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\bin\Debug\net8.0\LMS.Domain.deps.json
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\bin\Debug\net8.0\LMS.Domain.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\bin\Debug\net8.0\LMS.Domain.pdb
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\LMS.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\LMS.Domain.AssemblyInfoInputs.cache
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\LMS.Domain.AssemblyInfo.cs
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\LMS.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\LMS.Domain.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\refint\LMS.Domain.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\LMS.Domain.pdb
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.Domain\obj\Debug\net8.0\ref\LMS.Domain.dll

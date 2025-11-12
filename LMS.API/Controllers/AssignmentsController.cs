@@ -3,6 +3,7 @@ using LMS.Application.Features.Assignments.Commands.GradeAssignment;
 using LMS.Application.Features.Assignments.Commands.SubmitAssignment;
 using LMS.Application.Features.Assignments.Queries.GetAssignmentsByCourse;
 using LMS.Application.Features.Assignments.Queries.GetAssignmentSubmissions;
+using LMS.Application.Interfaces.Storage;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +18,16 @@ public class AssignmentsController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILogger<AssignmentsController> _logger;
+    private readonly IFileStorageService _fileStorageService;
 
-    public AssignmentsController(IMediator mediator, ILogger<AssignmentsController> logger)
+    public AssignmentsController(
+        IMediator mediator, 
+        ILogger<AssignmentsController> logger,
+        IFileStorageService fileStorageService)
     {
         _mediator = mediator;
         _logger = logger;
+        _fileStorageService = fileStorageService;
     }
 
     /// <summary>
@@ -83,12 +89,14 @@ public class AssignmentsController : ControllerBase
 
     /// <summary>
     /// Submit an assignment (Only Student, deadline must not be passed)
+    /// Supports file upload (PDF, video, image) and/or text answer
     /// </summary>
     [HttpPost("{assignmentId}/submit")]
     [Authorize(Roles = "Student")]
+    [RequestSizeLimit(100_000_000)] // 100 MB limit
     public async Task<ActionResult<int>> SubmitAssignment(
         int assignmentId,
-        [FromBody] SubmitAssignmentRequest request,
+        [FromForm] SubmitAssignmentRequest request,
         CancellationToken cancellationToken)
     {
         try
@@ -100,16 +108,46 @@ public class AssignmentsController : ControllerBase
                 return Unauthorized(new { message = "Invalid user token." });
             }
 
+            string? fileUrl = null;
+
+            // Handle file upload if provided
+            if (request.File != null && request.File.Length > 0)
+            {
+                // Validate file type - Only allow: pdf, jpg, png, mp4, docx
+                var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".mp4", ".docx" };
+                var fileExtension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
+                
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return BadRequest(new { message = "Invalid file type. Allowed types: PDF, JPG, PNG, MP4, DOCX." });
+                }
+
+                // Validate file size (100 MB max)
+                if (request.File.Length > 100_000_000)
+                {
+                    return BadRequest(new { message = "File size exceeds maximum limit of 100 MB." });
+                }
+
+                // Upload file to wwwroot/uploads/assignments
+                using var fileStream = request.File.OpenReadStream();
+                fileUrl = await _fileStorageService.UploadFileAsync(
+                    fileStream,
+                    request.File.FileName,
+                    request.File.ContentType,
+                    folder: "assignments",
+                    cancellationToken);
+            }
+
             var command = new SubmitAssignmentCommand
             {
                 AssignmentId = assignmentId,
                 StudentId = studentId,
-                FileUrl = request.FileUrl,
+                FileUrl = fileUrl ?? request.FileUrl,
                 AnswerText = request.AnswerText
             };
 
             var result = await _mediator.Send(command, cancellationToken);
-            return Ok(new { submissionId = result, message = "Assignment submitted successfully." });
+            return Ok(new { submissionId = result, message = "Assignment submitted successfully.", fileUrl });
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -129,10 +167,10 @@ public class AssignmentsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all submissions for a specific assignment (Only Teacher, Admin, MasterAdmin)
+    /// Get all submissions for a specific assignment (Teacher, Admin, MasterAdmin, Mentor - read-only)
     /// </summary>
     [HttpGet("{id}/submissions")]
-    [Authorize(Roles = "Teacher,Admin,MasterAdmin")]
+    [Authorize(Roles = "Teacher,Admin,MasterAdmin,Mentor")]
     public async Task<ActionResult> GetAssignmentSubmissions(int id, CancellationToken cancellationToken)
     {
         try
@@ -204,7 +242,19 @@ public class AssignmentsController : ControllerBase
 // Request DTOs
 public class SubmitAssignmentRequest
 {
+    /// <summary>
+    /// File to upload (PDF, image, or video). Can be null if only text answer is provided.
+    /// </summary>
+    public IFormFile? File { get; set; }
+    
+    /// <summary>
+    /// File URL (for backward compatibility or when file is uploaded separately)
+    /// </summary>
     public string? FileUrl { get; set; }
+    
+    /// <summary>
+    /// Text answer (optional, required if no file is provided)
+    /// </summary>
     public string? AnswerText { get; set; }
 }
 

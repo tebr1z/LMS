@@ -27,7 +27,36 @@ public class GetGroupsByCourseQueryHandler : IRequestHandler<GetGroupsByCourseQu
             throw new InvalidOperationException($"Course with ID {request.CourseId} not found.");
         }
 
-        var groups = await _unitOfWork.Groups.GetGroupsByCourseIdAsync(request.CourseId);
+        // Get groups based on role
+        List<Group> groups;
+        var allGroupsForCourse = await _unitOfWork.Groups.GetGroupsByCourseIdAsync(request.CourseId);
+
+        // Filter groups based on user role
+        if (request.UserRole == "MasterAdmin" || request.UserRole == "Mentor")
+        {
+            // MasterAdmin and Mentor see all groups
+            groups = allGroupsForCourse;
+        }
+        else if (request.UserRole == "Admin")
+        {
+            // Admin sees groups they created
+            groups = allGroupsForCourse.Where(g => g.CreatedBy == request.UserId).ToList();
+        }
+        else if (request.UserRole == "Teacher")
+        {
+            // Teacher sees groups they are assigned to
+            groups = allGroupsForCourse.Where(g => g.GroupUsers.Any(gu => gu.UserId == request.UserId)).ToList();
+        }
+        else if (request.UserRole == "Student")
+        {
+            // Student sees groups they belong to
+            groups = allGroupsForCourse.Where(g => g.GroupUsers.Any(gu => gu.UserId == request.UserId)).ToList();
+        }
+        else
+        {
+            groups = new List<Group>();
+        }
+
         var groupDtos = new List<GroupDto>();
 
         foreach (var group in groups)

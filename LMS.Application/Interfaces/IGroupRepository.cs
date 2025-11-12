@@ -8,5 +8,9 @@ public interface IGroupRepository : IRepository<Group>
     Task<List<Group>> GetGroupsByCourseIdAsync(int courseId);
     Task<bool> IsUserInGroupAsync(int groupId, int userId);
     Task<bool> IsCourseInGroupAsync(int groupId, int courseId);
+    Task<List<Group>> GetGroupsForUserAsync(int userId, string userRole);
+    Task<List<Group>> GetGroupsForStudentAsync(int studentId);
+    Task<List<Group>> GetGroupsForTeacherAsync(int teacherId);
+    Task<List<Group>> GetGroupsForAdminAsync(int adminId);
 }
 

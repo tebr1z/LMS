@@ -148,13 +148,34 @@ public class GroupsController : ControllerBase
     /// Get group details by ID
     /// </summary>
     [HttpGet("{id}")]
+    [Authorize(Roles = "Student,Teacher,Admin,MasterAdmin,Mentor")]
     public async Task<ActionResult> GetGroupDetails(int id, CancellationToken cancellationToken)
     {
         try
         {
-            var query = new GetGroupDetailsQuery { GroupId = id };
+            // Get current user ID and role from claims
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRoleClaim = User.FindFirst(ClaimTypes.Role)?.Value ?? 
+                               User.FindFirst("Role")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { message = "Invalid user token." });
+            }
+
+            var query = new GetGroupDetailsQuery 
+            { 
+                GroupId = id,
+                UserId = userId,
+                UserRole = userRoleClaim ?? string.Empty
+            };
             var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized access to group");
+            return Forbid(ex.Message);
         }
         catch (InvalidOperationException ex)
         {
@@ -172,11 +193,27 @@ public class GroupsController : ControllerBase
     /// Get all groups by course ID
     /// </summary>
     [HttpGet("by-course/{courseId}")]
+    [Authorize(Roles = "Student,Teacher,Admin,MasterAdmin,Mentor")]
     public async Task<ActionResult> GetGroupsByCourse(int courseId, CancellationToken cancellationToken)
     {
         try
         {
-            var query = new GetGroupsByCourseQuery { CourseId = courseId };
+            // Get current user ID and role from claims
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRoleClaim = User.FindFirst(ClaimTypes.Role)?.Value ?? 
+                               User.FindFirst("Role")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { message = "Invalid user token." });
+            }
+
+            var query = new GetGroupsByCourseQuery 
+            { 
+                CourseId = courseId,
+                UserId = userId,
+                UserRole = userRoleClaim ?? string.Empty
+            };
             var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
         }

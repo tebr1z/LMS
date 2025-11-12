@@ -26,6 +26,31 @@ public class GetGroupDetailsQueryHandler : IRequestHandler<GetGroupDetailsQuery,
             throw new InvalidOperationException($"Group with ID {request.GroupId} not found.");
         }
 
+        // Check access based on role
+        if (request.UserRole != "MasterAdmin" && request.UserRole != "Mentor")
+        {
+            if (request.UserRole == "Admin")
+            {
+                // Admin can only see groups they created
+                if (group.CreatedBy != request.UserId)
+                {
+                    throw new UnauthorizedAccessException("You do not have access to this group.");
+                }
+            }
+            else if (request.UserRole == "Teacher" || request.UserRole == "Student")
+            {
+                // Teacher and Student can only see groups they belong to
+                if (!group.GroupUsers.Any(gu => gu.UserId == request.UserId))
+                {
+                    throw new UnauthorizedAccessException("You do not have access to this group.");
+                }
+            }
+            else
+            {
+                throw new UnauthorizedAccessException("You do not have access to this group.");
+            }
+        }
+
         var groupDto = _mapper.Map<GroupDto>(group);
 
         // Map courses

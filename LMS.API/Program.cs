@@ -181,6 +181,9 @@ app.UseMiddleware<LMS.API.Middleware.ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
+// Serve static files from wwwroot
+app.UseStaticFiles();
+
 // Use Localization
 app.UseRequestLocalization();
 

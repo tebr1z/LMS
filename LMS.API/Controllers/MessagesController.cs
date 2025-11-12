@@ -23,6 +23,7 @@ public class MessagesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Student,Teacher,Admin,MasterAdmin")] // Mentor excluded - read-only
     public async Task<ActionResult<int>> SendMessage([FromBody] SendMessageCommand command, CancellationToken cancellationToken)
     {
         try

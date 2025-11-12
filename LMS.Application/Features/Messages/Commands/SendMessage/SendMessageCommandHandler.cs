@@ -19,6 +19,7 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, int
         {
             SenderId = request.SenderId,
             ReceiverId = request.ReceiverId,
+            GroupId = request.GroupId,
             Text = request.Text,
             SentAt = DateTime.UtcNow,
             CreatedAt = DateTime.UtcNow

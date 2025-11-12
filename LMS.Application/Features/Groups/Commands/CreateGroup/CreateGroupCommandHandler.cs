@@ -19,6 +19,7 @@ public class CreateGroupCommandHandler : IRequestHandler<CreateGroupCommand, int
         {
             Name = request.Name,
             Description = request.Description,
+            CreatedBy = request.CreatedBy,
             CreatedAt = DateTime.UtcNow
         };
 

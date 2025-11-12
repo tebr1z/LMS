@@ -40,5 +40,58 @@ public class GroupRepository : EfRepository<Group>, IGroupRepository
         return await _dbSet
             .AnyAsync(g => g.Id == groupId && g.CourseGroups.Any(cg => cg.CourseId == courseId));
     }
+
+    public async Task<List<Group>> GetGroupsForUserAsync(int userId, string userRole)
+    {
+        // This method routes to specific role-based methods
+        // For now, return all groups for MasterAdmin/Mentor, or route to specific methods
+        if (userRole == "MasterAdmin" || userRole == "Mentor")
+        {
+            return await ListAsync();
+        }
+        else if (userRole == "Student")
+        {
+            return await GetGroupsForStudentAsync(userId);
+        }
+        else if (userRole == "Teacher")
+        {
+            return await GetGroupsForTeacherAsync(userId);
+        }
+        else if (userRole == "Admin")
+        {
+            return await GetGroupsForAdminAsync(userId);
+        }
+        return new List<Group>();
+    }
+
+    public async Task<List<Group>> GetGroupsForStudentAsync(int studentId)
+    {
+        // Student sees only groups they belong to
+        return await _dbSet
+            .Where(g => g.GroupUsers.Any(gu => gu.UserId == studentId))
+            .Include(g => g.GroupUsers)
+            .Include(g => g.CourseGroups)
+            .ToListAsync();
+    }
+
+    public async Task<List<Group>> GetGroupsForTeacherAsync(int teacherId)
+    {
+        // Teacher sees groups they are assigned to (via GroupUsers)
+        return await _dbSet
+            .Where(g => g.GroupUsers.Any(gu => gu.UserId == teacherId))
+            .Include(g => g.GroupUsers)
+            .Include(g => g.CourseGroups)
+            .ToListAsync();
+    }
+
+    public async Task<List<Group>> GetGroupsForAdminAsync(int adminId)
+    {
+        // Admin sees groups they created
+        return await _dbSet
+            .Where(g => g.CreatedBy == adminId)
+            .Include(g => g.GroupUsers)
+            .Include(g => g.CourseGroups)
+            .ToListAsync();
+    }
 }
 

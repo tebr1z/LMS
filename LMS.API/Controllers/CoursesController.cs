@@ -4,12 +4,13 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using System.Security.Claims;
 
 namespace LMS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Student,Teacher,Admin,MasterAdmin")]
+[Authorize(Roles = "Student,Teacher,Admin,MasterAdmin,Mentor")]
 public class CoursesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -24,10 +25,24 @@ public class CoursesController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "Student,Teacher,Admin,MasterAdmin")]
+    [Authorize(Roles = "Student,Teacher,Admin,MasterAdmin,Mentor")]
     public async Task<ActionResult> GetAllCourses(CancellationToken cancellationToken)
     {
-        var query = new GetAllCoursesQuery();
+        // Get current user ID and role from claims
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userRoleClaim = User.FindFirst(ClaimTypes.Role)?.Value ?? 
+                           User.FindFirst("Role")?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Invalid user token." });
+        }
+
+        var query = new GetAllCoursesQuery
+        {
+            UserId = userId,
+            UserRole = userRoleClaim ?? string.Empty
+        };
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }

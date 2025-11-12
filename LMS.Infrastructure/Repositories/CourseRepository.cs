@@ -31,5 +31,25 @@ public class CourseRepository : EfRepository<Course>, ICourseRepository
             .Include(c => c.Enrollments)
             .ToListAsync();
     }
+
+    public async Task<List<Course>> GetCoursesForTeacherAsync(int teacherId)
+    {
+        // Teacher sees courses they created OR courses they are enrolled in
+        return await _dbSet
+            .Where(c => c.CreatedBy == teacherId || 
+                       c.Enrollments.Any(e => e.UserId == teacherId))
+            .Include(c => c.Enrollments)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    public async Task<List<Course>> GetCoursesForStudentAsync(int studentId)
+    {
+        // Student sees courses they are enrolled in
+        return await _dbSet
+            .Where(c => c.Enrollments.Any(e => e.UserId == studentId))
+            .Include(c => c.Enrollments)
+            .ToListAsync();
+    }
 }
 

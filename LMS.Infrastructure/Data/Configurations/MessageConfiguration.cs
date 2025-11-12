@@ -19,6 +19,9 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
         builder.Property(m => m.ReceiverId)
             .IsRequired();
 
+        builder.Property(m => m.GroupId)
+            .IsRequired(false);
+
         builder.Property(m => m.Text)
             .IsRequired()
             .HasMaxLength(5000);
@@ -36,6 +39,12 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
         builder.HasOne<ApplicationUser>()
             .WithMany(u => u.ReceivedMessages)
             .HasForeignKey(m => m.ReceiverId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Relationship with Group (optional)
+        builder.HasOne(m => m.Group)
+            .WithMany()
+            .HasForeignKey(m => m.GroupId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

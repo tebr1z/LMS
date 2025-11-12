@@ -111,13 +111,10 @@ builder.Services.AddSignalR();
 // Configure Localization
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-var supportedCultures = new[]
-{
-    new CultureInfo("en"),
-    new CultureInfo("az"),
-    new CultureInfo("tr"),
-    new CultureInfo("ru")
-};
+// Get supported cultures from environment variable or use default
+var supportedCulturesString = builder.Configuration["SupportedCultures"] ?? "en,az,tr,ru";
+var cultureCodes = supportedCulturesString.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+var supportedCultures = cultureCodes.Select(c => new CultureInfo(c)).ToArray();
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {

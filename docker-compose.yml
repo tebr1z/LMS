@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: lms_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-LmsDb}
+      MYSQL_USER: ${MYSQL_USER:-lmsuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-lmspassword}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - lms_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: lms_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lms_network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lms_api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      # Connection String
+      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection:-Server=mysql;Database=LmsDb;User Id=lmsuser;Password=lmspassword;Port=3306}
+      
+      # JWT Configuration
+      Jwt__Key: ${Jwt__Key:-HjhbaxbsajkUJHIU898U98!HuihuhHSuhW#2@2huhuihshdusabcuasbc}
+      Jwt__Issuer: ${Jwt__Issuer:-LMS.API}
+      Jwt__Audience: ${Jwt__Audience:-LMS.API}
+      Jwt__ExpirationMinutes: ${Jwt__ExpirationMinutes:-60}
+      
+      # Supported Cultures (comma-separated)
+      SupportedCultures: ${SupportedCultures:-en,az,tr,ru}
+      
+      # ASP.NET Core Configuration
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:8080
+      
+      # MySQL Connection
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      
+      # Redis Connection (optional)
+      Redis__ConnectionString: ${Redis__ConnectionString:-redis:6379}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - lms_network
+    healthcheck:
+      test: ["CMD", "dotnet", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  lms_network:
+    driver: bridge
+

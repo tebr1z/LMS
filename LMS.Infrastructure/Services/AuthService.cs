@@ -5,6 +5,7 @@ using System.Text;
 using LMS.Application.DTOs.Auth;
 using LMS.Application.Interfaces;
 using LMS.Domain.Entities;
+using LMS.Domain.Enums;
 using LMS.Infrastructure.Data;
 using LMS.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -42,12 +43,20 @@ public class AuthService : IAuthService
             throw new InvalidOperationException("User with this email already exists.");
         }
 
+        // Parse role from string to enum
+        UserRole userRole = UserRole.Student; // Default
+        if (!string.IsNullOrEmpty(request.Role) && Enum.TryParse<UserRole>(request.Role, true, out var parsedRole))
+        {
+            userRole = parsedRole;
+        }
+
         // Create new user
         var user = new ApplicationUser
         {
             UserName = request.Email,
             Email = request.Email,
             FullName = request.FullName,
+            Role = userRole,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -57,14 +66,15 @@ public class AuthService : IAuthService
             throw new InvalidOperationException($"User creation failed: {string.Join(", ", result.Errors.Select(e => e.Description))}");
         }
 
-        // Ensure role exists
-        if (!await _roleManager.RoleExistsAsync(request.Role))
+        // Ensure role exists (using enum name as string)
+        var roleName = user.Role.ToString();
+        if (!await _roleManager.RoleExistsAsync(roleName))
         {
-            await _roleManager.CreateAsync(new ApplicationRole(request.Role));
+            await _roleManager.CreateAsync(new ApplicationRole(roleName));
         }
 
         // Assign role to user
-        await _userManager.AddToRoleAsync(user, request.Role);
+        await _userManager.AddToRoleAsync(user, roleName);
 
         // Generate tokens
         var token = GenerateJwtToken(user);
@@ -77,7 +87,7 @@ public class AuthService : IAuthService
             ExpiresAt = DateTime.UtcNow.AddMinutes(GetJwtExpirationMinutes()),
             Email = user.Email!,
             FullName = user.FullName,
-            Role = request.Role
+            Role = user.Role.ToString()
         };
     }
 
@@ -95,9 +105,8 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("Invalid email or password.");
         }
 
-        // Get user roles
-        var roles = await _userManager.GetRolesAsync(user);
-        var role = roles.FirstOrDefault() ?? "Student";
+        // Get user role from entity
+        var role = user.Role.ToString();
 
         // Generate tokens
         var token = GenerateJwtToken(user);
@@ -141,9 +150,8 @@ public class AuthService : IAuthService
 
         await _context.SaveChangesAsync();
 
-        // Get user roles
-        var roles = await _userManager.GetRolesAsync(user);
-        var role = roles.FirstOrDefault() ?? "Student";
+        // Get user role from entity
+        var role = user.Role.ToString();
 
         return new AuthResponse
         {
@@ -177,15 +185,12 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
             new Claim(ClaimTypes.Name, user.FullName),
+            new Claim("Role", user.Role.ToString()), // Add UserRole enum as claim
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        // Add roles to claims
-        var roles = _userManager.GetRolesAsync(user).Result;
-        foreach (var role in roles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
+        // Add role to claims (for [Authorize(Roles="...")] to work)
+        claims.Add(new Claim(ClaimTypes.Role, user.Role.ToString()));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
             _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured")));

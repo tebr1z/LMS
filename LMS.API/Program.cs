@@ -3,6 +3,8 @@ using LMS.Application;
 using LMS.Infrastructure;
 using LMS.Infrastructure.Data;
 using LMS.API.Hubs;
+using LMS.API.Extensions;
+using LMS.API.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
@@ -52,7 +54,7 @@ builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddApplication();
 
 // Configure Infrastructure Services
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // Configure JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured");
@@ -102,8 +104,23 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Configure Authorization
-builder.Services.AddAuthorization();
+// Configure Authorization with role-based policies
+builder.Services.AddAuthorization(options =>
+{
+    // Define role-based policies
+    options.AddPolicy("MasterAdmin", policy => policy.RequireRole("MasterAdmin"));
+    options.AddPolicy("Admin", policy => policy.RequireRole("MasterAdmin", "Admin"));
+    options.AddPolicy("Teacher", policy => policy.RequireRole("MasterAdmin", "Admin", "Teacher"));
+    options.AddPolicy("Student", policy => policy.RequireRole("MasterAdmin", "Admin", "Teacher", "Student"));
+    options.AddPolicy("Mentor", policy => policy.RequireRole("MasterAdmin", "Admin", "Teacher", "Mentor"));
+    options.AddPolicy("StudentOffice", policy => policy.RequireRole("MasterAdmin", "Admin", "StudentOffice"));
+    options.AddPolicy("Finance", policy => policy.RequireRole("MasterAdmin", "Admin", "Finance"));
+    
+    // Combined policies
+    options.AddPolicy("AdminOrTeacher", policy => policy.RequireRole("MasterAdmin", "Admin", "Teacher"));
+    options.AddPolicy("AdminOrStudentOffice", policy => policy.RequireRole("MasterAdmin", "Admin", "StudentOffice"));
+    options.AddPolicy("AdminOrFinance", policy => policy.RequireRole("MasterAdmin", "Admin", "Finance"));
+});
 
 // Configure SignalR
 builder.Services.AddSignalR();
@@ -131,6 +148,18 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 
 var app = builder.Build();
 
+// Migrate database on startup (wait for MySQL to be ready)
+try
+{
+    await app.MigrateDatabaseAsync();
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "Database migration failed. Application will continue but may have issues.");
+    // Don't throw - allow app to start even if migration fails
+}
+
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
@@ -157,6 +186,7 @@ app.UseRequestLocalization();
 
 // Authentication & Authorization
 app.UseAuthentication();
+app.UseRoleAuthorization(); // Custom middleware for role-based authorization
 app.UseAuthorization();
 
 // Map Controllers
@@ -165,5 +195,6 @@ app.MapControllers();
 // Map SignalR Hubs
 app.MapHub<NotificationHub>("/notificationHub");
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<LMS.Infrastructure.Services.Notifications.NotificationHub>("/notificationsHub");
 
 app.Run();

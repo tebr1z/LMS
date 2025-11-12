@@ -27,6 +27,11 @@ RUN dotnet publish "LMS.API.csproj" -c Release -o /app/publish /p:UseAppHost=fal
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
+# Install MySQL client for health checks
+RUN apt-get update && \
+    apt-get install -y default-mysql-client && \
+    rm -rf /var/lib/apt/lists/*
+
 # Create a non-root user
 RUN addgroup --system --gid 1001 dotnetgroup && \
     adduser --system --uid 1001 --ingroup dotnetgroup dotnetuser
@@ -48,6 +53,6 @@ EXPOSE 8081
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-# Set the entry point
+# Set the entry point (will be overridden by docker-compose if needed)
 ENTRYPOINT ["dotnet", "LMS.API.dll"]
 

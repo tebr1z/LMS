@@ -18,6 +18,11 @@ public class LmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<Enrollment> Enrollments { get; set; } = null!;
     public DbSet<Message> Messages { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+    public DbSet<Group> Groups { get; set; } = null!;
+    public DbSet<CourseGroup> CourseGroups { get; set; } = null!;
+    public DbSet<GroupUser> GroupUsers { get; set; } = null!;
+    public DbSet<Assignment> Assignments { get; set; } = null!;
+    public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

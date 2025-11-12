@@ -11,6 +11,11 @@ public class UnitOfWork : IUnitOfWork
     private ICourseRepository? _courses;
     private IEnrollmentRepository? _enrollments;
     private IMessageRepository? _messages;
+    private IGroupRepository? _groups;
+    private ICourseGroupRepository? _courseGroups;
+    private IGroupUserRepository? _groupUsers;
+    private IAssignmentRepository? _assignments;
+    private IAssignmentSubmissionRepository? _assignmentSubmissions;
 
     public UnitOfWork(LmsDbContext context)
     {
@@ -25,6 +30,21 @@ public class UnitOfWork : IUnitOfWork
 
     public IMessageRepository Messages =>
         _messages ??= new MessageRepository(_context);
+
+    public IGroupRepository Groups =>
+        _groups ??= new GroupRepository(_context);
+
+    public ICourseGroupRepository CourseGroups =>
+        _courseGroups ??= new CourseGroupRepository(_context);
+
+    public IGroupUserRepository GroupUsers =>
+        _groupUsers ??= new GroupUserRepository(_context);
+
+    public IAssignmentRepository Assignments =>
+        _assignments ??= new AssignmentRepository(_context);
+
+    public IAssignmentSubmissionRepository AssignmentSubmissions =>
+        _assignmentSubmissions ??= new AssignmentSubmissionRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

@@ -32,6 +32,16 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
             .HasForeignKey(e => e.CourseId)
             .OnDelete(DeleteBehavior.Cascade); // Delete enrollments when course is deleted
 
+        builder.HasMany(c => c.CourseGroups)
+            .WithOne(cg => cg.Course)
+            .HasForeignKey(cg => cg.CourseId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(c => c.Assignments)
+            .WithOne(a => a.Course)
+            .HasForeignKey(a => a.CourseId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Relationship with ApplicationUser
         builder.HasOne<ApplicationUser>()
             .WithMany(u => u.CreatedCourses)

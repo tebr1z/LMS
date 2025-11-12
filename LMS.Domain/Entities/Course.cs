@@ -8,5 +8,7 @@ public class Course : BaseEntity
 
     // Navigation properties - Using object to avoid dependency on Infrastructure
     public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+    public virtual ICollection<CourseGroup> CourseGroups { get; set; } = new List<CourseGroup>();
+    public virtual ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 }
 

@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Identity;
 using LMS.Domain.Entities;
+using LMS.Domain.Enums;
 
 namespace LMS.Infrastructure.Identity;
 
 public class ApplicationUser : IdentityUser<int>
 {
     public string FullName { get; set; } = string.Empty;
+    public UserRole Role { get; set; } = UserRole.Student;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 

@@ -9,7 +9,7 @@ namespace LMS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Student,Instructor,Admin")]
+[Authorize(Roles = "Student,Teacher,Admin,MasterAdmin")]
 public class EnrollmentsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -24,7 +24,7 @@ public class EnrollmentsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Student,Admin")]
+    [Authorize(Roles = "Student,Admin,MasterAdmin")]
     public async Task<ActionResult<int>> EnrollInCourse([FromBody] EnrollInCourseCommand command, CancellationToken cancellationToken)
     {
         try

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "OgMSj7kh7lwrHpd1xncZXNwN8QgXjHSMfKVO+dXQ1NSzdqze+ejMJ/ovhx2TTrW3vSH8/8Iaijc164HAOXGMuw==",
+  "dgSpecHash": "vfj2zQ+jmNp28fQKzQpp+NNUQB554i2UCSeQur54UduoAzATOxaAO+p2pmd/FM0BFy7ADQlUNoD/oBehOQgW/Q==",
   "success": true,
   "projectFilePath": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Application\\LMS.Application.csproj",
   "expectedPackageFiles": [
@@ -10,6 +10,7 @@
     "C:\\Users\\Windows 11\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\12.1.0\\fluentvalidation.dependencyinjectionextensions.12.1.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\mediatr\\13.1.0\\mediatr.13.1.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
+    "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.0\\microsoft.aspnetcore.openapi.10.0.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.0\\microsoft.extensions.dependencyinjection.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.localization\\10.0.0\\microsoft.extensions.localization.10.0.0.nupkg.sha512",

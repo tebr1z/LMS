@@ -9,7 +9,7 @@ namespace LMS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Student,Instructor,Admin")]
+[Authorize(Roles = "Student,Teacher,Admin,MasterAdmin")]
 public class CoursesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -24,7 +24,7 @@ public class CoursesController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "Student,Instructor,Admin")]
+    [Authorize(Roles = "Student,Teacher,Admin,MasterAdmin")]
     public async Task<ActionResult> GetAllCourses(CancellationToken cancellationToken)
     {
         var query = new GetAllCoursesQuery();
@@ -33,7 +33,7 @@ public class CoursesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Instructor,Admin")]
+    [Authorize(Roles = "Teacher,Admin,MasterAdmin")]
     public async Task<ActionResult<int>> CreateCourse([FromBody] CreateCourseCommand command, CancellationToken cancellationToken)
     {
         try

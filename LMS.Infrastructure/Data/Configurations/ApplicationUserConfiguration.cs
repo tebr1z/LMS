@@ -15,6 +15,10 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
             .IsRequired()
             .HasMaxLength(200);
 
+        builder.Property(u => u.Role)
+            .IsRequired()
+            .HasConversion<int>(); // Store enum as int in database
+
         builder.Property(u => u.CreatedAt)
             .IsRequired();
 

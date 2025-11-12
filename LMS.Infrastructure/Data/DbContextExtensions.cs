@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using LMS.Infrastructure.Identity;
 
 namespace LMS.Infrastructure.Data;
@@ -21,16 +20,14 @@ public static class DbContextExtensions
         }
 
         services.AddDbContext<LmsDbContext>(options =>
-            options.UseMySql(
+            options.UseSqlServer(
                 connectionString,
-                new MySqlServerVersion(new Version(8, 0, 21)),
-                mysqlOptions =>
+                sqlServerOptions =>
                 {
-                    mysqlOptions.EnableRetryOnFailure(
+                    sqlServerOptions.EnableRetryOnFailure(
                         maxRetryCount: 5,
                         maxRetryDelay: TimeSpan.FromSeconds(30),
                         errorNumbersToAdd: null);
-                    mysqlOptions.SchemaBehavior(MySqlSchemaBehavior.Ignore);
                 })
             .UseLazyLoadingProxies()); // Enable lazy loading with proxies
 

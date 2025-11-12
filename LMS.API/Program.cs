@@ -138,8 +138,20 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "LMS API v1");
+        c.RoutePrefix = "swagger"; // Swagger UI available at /swagger
+        c.DisplayRequestDuration();
+        c.EnableDeepLinking();
+        c.EnableFilter();
+        c.ShowExtensions();
+        c.DefaultModelsExpandDepth(-1); // Hide models section by default
+    });
 }
+
+// Global Exception Handling Middleware (must be early in pipeline)
+app.UseMiddleware<LMS.API.Middleware.ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

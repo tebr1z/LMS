@@ -12,8 +12,14 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
 
         builder.HasKey(a => a.Id);
 
+        builder.Property(a => a.CoursePreparedId)
+            .IsRequired(false); // Nullable: can be linked to CoursePrepared or Course
+
         builder.Property(a => a.CourseId)
-            .IsRequired();
+            .IsRequired(false); // Nullable: can be linked to CoursePrepared or Course
+
+        builder.Property(a => a.GroupId)
+            .IsRequired(false); // Nullable: can be course-wide or group-specific
 
         builder.Property(a => a.Title)
             .IsRequired()
@@ -22,24 +28,48 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
         builder.Property(a => a.Description)
             .HasMaxLength(2000);
 
-        builder.Property(a => a.Type)
+        builder.Property(a => a.AssignmentType)
             .IsRequired()
             .HasConversion<int>(); // Store enum as int in database
 
-        builder.Property(a => a.Deadline)
+        builder.Property(a => a.MaxScore)
+            .IsRequired()
+            .HasDefaultValue(100);
+
+        builder.Property(a => a.CreatedById)
             .IsRequired();
 
-        builder.Property(a => a.CreatedBy)
-            .IsRequired();
+        builder.Property(a => a.AllowEditAfterPublish)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(a => a.AllowResubmit)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(a => a.Deadline)
+            .IsRequired(false); // Nullable deadline
 
         builder.Property(a => a.CreatedAt)
             .IsRequired();
 
         // Relationships
+        builder.HasOne(a => a.CoursePrepared)
+            .WithMany(cp => cp.Assignments)
+            .HasForeignKey(a => a.CoursePreparedId)
+            .OnDelete(DeleteBehavior.SetNull); // Set null if CoursePrepared is deleted
+
         builder.HasOne(a => a.Course)
             .WithMany(c => c.Assignments)
             .HasForeignKey(a => a.CourseId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.SetNull); // Set null if Course is deleted
+
+        builder.HasOne(a => a.Group)
+            .WithMany()
+            .HasForeignKey(a => a.GroupId)
+            .OnDelete(DeleteBehavior.SetNull); // Set null if group is deleted
+
+        // Check constraint: Either CoursePreparedId or CourseId must be set (handled at application level)
 
         builder.HasMany(a => a.Submissions)
             .WithOne(s => s.Assignment)

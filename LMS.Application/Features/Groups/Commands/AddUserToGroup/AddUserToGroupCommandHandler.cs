@@ -1,21 +1,19 @@
 using LMS.Application.Interfaces;
 using LMS.Domain.Entities;
 using LMS.Domain.Enums;
-using LMS.Infrastructure.Identity;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 namespace LMS.Application.Features.Groups.Commands.AddUserToGroup;
 
 public class AddUserToGroupCommandHandler : IRequestHandler<AddUserToGroupCommand, int>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserRepository _userRepository;
 
-    public AddUserToGroupCommandHandler(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+    public AddUserToGroupCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
     {
         _unitOfWork = unitOfWork;
-        _userManager = userManager;
+        _userRepository = userRepository;
     }
 
     public async Task<int> Handle(AddUserToGroupCommand request, CancellationToken cancellationToken)
@@ -28,7 +26,7 @@ public class AddUserToGroupCommandHandler : IRequestHandler<AddUserToGroupComman
         }
 
         // Check if user exists
-        var user = await _userManager.FindByIdAsync(request.UserId.ToString());
+        var user = await _userRepository.GetUserByIdAsync(request.UserId);
         if (user == null)
         {
             throw new InvalidOperationException($"User with ID {request.UserId} not found.");
@@ -42,7 +40,7 @@ public class AddUserToGroupCommandHandler : IRequestHandler<AddUserToGroupComman
         }
 
         // Authorization check: Only MasterAdmin, Admin, or Teacher (if assigned to group) can add users
-        var addedByUser = await _userManager.FindByIdAsync(request.AddedBy.ToString());
+        var addedByUser = await _userRepository.GetUserByIdAsync(request.AddedBy);
         if (addedByUser == null)
         {
             throw new UnauthorizedAccessException("Invalid user performing the action.");

@@ -7,7 +7,7 @@ namespace LMS.API.Controllers.Admin;
 
 [ApiController]
 [Route("api/admin")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "MasterAdmin")]
 public class AdminController : ControllerBase
 {
     private readonly IAdminService _adminService;
@@ -103,6 +103,27 @@ public class AdminController : ControllerBase
         {
             _logger.LogError(ex, "Error retrieving enrollment statistics");
             return StatusCode(500, ApiResponse<EnrollmentStatistics>.ErrorResponse("An error occurred while retrieving enrollment statistics", ex.Message));
+        }
+    }
+
+    /// <summary>
+    /// Get all groups (MasterAdmin only)
+    /// </summary>
+    [HttpGet("groups")]
+    public async Task<ActionResult<ApiResponse<GroupManagementData>>> GetGroups(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var data = await _adminService.GetGroupManagementDataAsync(pageNumber, pageSize, cancellationToken);
+            return Ok(ApiResponse<GroupManagementData>.SuccessResponse(data, "Groups retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving groups");
+            return StatusCode(500, ApiResponse<GroupManagementData>.ErrorResponse("An error occurred while retrieving groups", ex.Message));
         }
     }
 }

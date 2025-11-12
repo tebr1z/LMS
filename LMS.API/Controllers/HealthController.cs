@@ -5,7 +5,7 @@ namespace LMS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[AllowAnonymous]
 public class HealthController : ControllerBase
 {
     [HttpGet]

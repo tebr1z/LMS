@@ -1,11 +1,19 @@
 {
   "Version": 1,
-  "Hash": "wa0E4K32lw5QiNXtfSUXXx98mSjEYaXV9mZZ1hqSa/E=",
+  "Hash": "aI4kRZEc89q/VtnOZ7doR0zxSnEeidX/m4F+8D5kOew=",
   "Source": "LMS.API",
   "BasePath": "_content/LMS.API",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "LMS.API\\wwwroot",
+      "Source": "LMS.API",
+      "ContentRoot": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.API\\wwwroot\\",
+      "BasePath": "_content/LMS.API",
+      "Pattern": "**"
+    }
+  ],
   "Assets": []
 }

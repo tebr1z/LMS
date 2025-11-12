@@ -184,6 +184,10 @@ C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\runtimes\wi
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Runtime.Caching.dll
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\LMS.API.Resources.Controllers.AssignmentsController.az.resources
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\LMS.API.Resources.Controllers.AssignmentsController.en.resources
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\LMS.API.Resources.Controllers.GroupsController.tr.resources
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\LMS.API.staticwebassets.runtime.json
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\az\LMS.API.resources.cs
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\en\LMS.API.resources.cs
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\ru\LMS.API.resources.cs

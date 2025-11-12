@@ -29,6 +29,11 @@ public interface IAdminService
     /// Gets enrollment statistics
     /// </summary>
     Task<EnrollmentStatistics> GetEnrollmentStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets group management data
+    /// </summary>
+    Task<GroupManagementData> GetGroupManagementDataAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -115,5 +120,31 @@ public class DailyEnrollment
 {
     public DateTime Date { get; set; }
     public int Count { get; set; }
+}
+
+/// <summary>
+/// Group management data model
+/// </summary>
+public class GroupManagementData
+{
+    public List<GroupInfo> Groups { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int PageNumber { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+}
+
+/// <summary>
+/// Group info model
+/// </summary>
+public class GroupInfo
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string CreatorName { get; set; } = string.Empty;
+    public int MemberCount { get; set; }
+    public int CourseCount { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
 

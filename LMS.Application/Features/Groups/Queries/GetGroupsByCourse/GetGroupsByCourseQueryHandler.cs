@@ -1,6 +1,7 @@
 using AutoMapper;
 using LMS.Application.DTOs.Groups;
 using LMS.Application.Interfaces;
+using LMS.Domain.Entities;
 using MediatR;
 
 namespace LMS.Application.Features.Groups.Queries.GetGroupsByCourse;

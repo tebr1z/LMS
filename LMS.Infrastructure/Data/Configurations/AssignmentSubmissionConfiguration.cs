@@ -28,8 +28,16 @@ public class AssignmentSubmissionConfiguration : IEntityTypeConfiguration<Assign
             .IsRequired();
 
         builder.Property(s => s.Score)
-            .HasPrecision(5, 2)
-            .HasDefaultValue(null); // Score is nullable, range 0-100 // e.g., 100.00
+            .IsRequired(false); // Score is nullable, int type
+
+        builder.Property(s => s.EvaluatedById)
+            .IsRequired(false);
+
+        builder.Property(s => s.EvaluatedAt)
+            .IsRequired(false);
+
+        builder.Property(s => s.TimeOnPageInSeconds)
+            .IsRequired(false); // Time student spent on assignment page (aggregate)
 
         builder.Property(s => s.CreatedAt)
             .IsRequired();

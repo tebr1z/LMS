@@ -1,20 +1,18 @@
 using LMS.Application.Interfaces;
 using LMS.Domain.Enums;
-using LMS.Infrastructure.Identity;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 namespace LMS.Application.Features.Assignments.Commands.GradeAssignment;
 
 public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserRepository _userRepository;
 
-    public GradeAssignmentCommandHandler(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+    public GradeAssignmentCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
     {
         _unitOfWork = unitOfWork;
-        _userManager = userManager;
+        _userRepository = userRepository;
     }
 
     public async Task<bool> Handle(GradeAssignmentCommand request, CancellationToken cancellationToken)
@@ -39,7 +37,7 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
         }
 
         // Check if evaluator exists and is a Teacher
-        var evaluator = await _userManager.FindByIdAsync(request.EvaluatedBy.ToString());
+        var evaluator = await _userRepository.GetUserByIdAsync(request.EvaluatedBy);
         if (evaluator == null)
         {
             throw new InvalidOperationException($"Evaluator with ID {request.EvaluatedBy} not found.");

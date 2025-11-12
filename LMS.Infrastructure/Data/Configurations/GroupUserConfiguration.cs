@@ -20,7 +20,7 @@ public class GroupUserConfiguration : IEntityTypeConfiguration<GroupUser>
 
         builder.Property(gu => gu.Role)
             .IsRequired()
-            .HasMaxLength(50);
+            .HasConversion<int>(); // Store enum as int in database
 
         builder.Property(gu => gu.CreatedAt)
             .IsRequired();

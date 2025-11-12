@@ -12,7 +12,7 @@ public class CourseGroupConfiguration : IEntityTypeConfiguration<CourseGroup>
 
         builder.HasKey(cg => cg.Id);
 
-        builder.Property(cg => cg.CourseId)
+        builder.Property(cg => cg.CoursePreparedId)
             .IsRequired();
 
         builder.Property(cg => cg.GroupId)
@@ -22,9 +22,9 @@ public class CourseGroupConfiguration : IEntityTypeConfiguration<CourseGroup>
             .IsRequired();
 
         // Relationships
-        builder.HasOne(cg => cg.Course)
-            .WithMany(c => c.CourseGroups)
-            .HasForeignKey(cg => cg.CourseId)
+        builder.HasOne(cg => cg.CoursePrepared)
+            .WithMany(cp => cp.CourseGroups)
+            .HasForeignKey(cg => cg.CoursePreparedId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(cg => cg.Group)
@@ -32,8 +32,8 @@ public class CourseGroupConfiguration : IEntityTypeConfiguration<CourseGroup>
             .HasForeignKey(cg => cg.GroupId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Unique constraint: A group can only be assigned to a course once
-        builder.HasIndex(cg => new { cg.CourseId, cg.GroupId })
+        // Unique constraint: A group can only be assigned to a course prepared once
+        builder.HasIndex(cg => new { cg.CoursePreparedId, cg.GroupId })
             .IsUnique();
     }
 }

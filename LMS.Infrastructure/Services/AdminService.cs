@@ -10,11 +10,13 @@ namespace LMS.Infrastructure.Services;
 public class AdminService : IAdminService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserRepository _userRepository;
     private readonly ILogger<AdminService> _logger;
 
-    public AdminService(IUnitOfWork unitOfWork, ILogger<AdminService> logger)
+    public AdminService(IUnitOfWork unitOfWork, IUserRepository userRepository, ILogger<AdminService> logger)
     {
         _unitOfWork = unitOfWork;
+        _userRepository = userRepository;
         _logger = logger;
     }
 
@@ -148,6 +150,51 @@ public class AdminService : IAdminService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting enrollment statistics");
+            throw;
+        }
+    }
+
+    public async Task<GroupManagementData> GetGroupManagementDataAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var groups = await _unitOfWork.Groups.ListAsync();
+            var groupInfos = new List<GroupInfo>();
+
+            foreach (var group in groups)
+            {
+                // Get creator name
+                var creatorName = await _userRepository.GetUserFullNameAsync(group.CreatedBy) ?? "Unknown";
+
+                groupInfos.Add(new GroupInfo
+                {
+                    Id = group.Id,
+                    Name = group.Name,
+                    Description = group.Description,
+                    CreatorName = creatorName,
+                    MemberCount = group.GroupUsers?.Count ?? 0,
+                    CourseCount = group.CourseGroups?.Count ?? 0,
+                    CreatedAt = group.CreatedAt
+                });
+            }
+
+            var totalCount = groupInfos.Count;
+            var pagedGroups = groupInfos
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new GroupManagementData
+            {
+                Groups = pagedGroups,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting group management data");
             throw;
         }
     }

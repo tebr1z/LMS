@@ -15,6 +15,7 @@ public class LmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
 
     // DbSets
     public DbSet<Course> Courses { get; set; } = null!;
+    public DbSet<CoursePrepared> CoursePrepareds { get; set; } = null!;
     public DbSet<Enrollment> Enrollments { get; set; } = null!;
     public DbSet<Message> Messages { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
@@ -23,6 +24,7 @@ public class LmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<GroupUser> GroupUsers { get; set; } = null!;
     public DbSet<Assignment> Assignments { get; set; } = null!;
     public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; } = null!;
+    public DbSet<File> Files { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

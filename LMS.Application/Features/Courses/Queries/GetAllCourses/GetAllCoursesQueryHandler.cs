@@ -1,6 +1,7 @@
 using AutoMapper;
 using LMS.Application.DTOs.Courses;
 using LMS.Application.Interfaces;
+using LMS.Domain.Entities;
 using LMS.Domain.Enums;
 using MediatR;
 

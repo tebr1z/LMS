@@ -11,6 +11,14 @@ public class GroupRepository : EfRepository<Group>, IGroupRepository
     {
     }
 
+    public override async Task<List<Group>> ListAsync()
+    {
+        return await _dbSet
+            .Include(g => g.GroupUsers)
+            .Include(g => g.CourseGroups)
+            .ToListAsync();
+    }
+
     public async Task<Group?> GetGroupWithDetailsAsync(int groupId)
     {
         return await _dbSet

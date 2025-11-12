@@ -19,8 +19,8 @@ public class GroupConfiguration : IEntityTypeConfiguration<Group>
         builder.Property(g => g.Description)
             .HasMaxLength(1000);
 
-        builder.Property(g => g.CreatedBy)
-            .IsRequired();
+        builder.Property(g => g.CreatedById)
+            .IsRequired(false);
 
         builder.Property(g => g.CreatedAt)
             .IsRequired();

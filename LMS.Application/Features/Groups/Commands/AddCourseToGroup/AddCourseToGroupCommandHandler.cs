@@ -1,21 +1,19 @@
 using LMS.Application.Interfaces;
 using LMS.Domain.Entities;
 using LMS.Domain.Enums;
-using LMS.Infrastructure.Identity;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 namespace LMS.Application.Features.Groups.Commands.AddCourseToGroup;
 
 public class AddCourseToGroupCommandHandler : IRequestHandler<AddCourseToGroupCommand, int>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserRepository _userRepository;
 
-    public AddCourseToGroupCommandHandler(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+    public AddCourseToGroupCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
     {
         _unitOfWork = unitOfWork;
-        _userManager = userManager;
+        _userRepository = userRepository;
     }
 
     public async Task<int> Handle(AddCourseToGroupCommand request, CancellationToken cancellationToken)
@@ -42,7 +40,7 @@ public class AddCourseToGroupCommandHandler : IRequestHandler<AddCourseToGroupCo
         }
 
         // Authorization check: Only MasterAdmin, Admin, or Teacher (if assigned to group) can add courses
-        var addedByUser = await _userManager.FindByIdAsync(request.AddedBy.ToString());
+        var addedByUser = await _userRepository.GetUserByIdAsync(request.AddedBy);
         if (addedByUser == null)
         {
             throw new UnauthorizedAccessException("Invalid user performing the action.");

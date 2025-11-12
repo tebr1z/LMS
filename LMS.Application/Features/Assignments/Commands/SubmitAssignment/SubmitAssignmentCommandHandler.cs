@@ -1,21 +1,19 @@
 using LMS.Application.Interfaces;
 using LMS.Domain.Entities;
 using LMS.Domain.Enums;
-using LMS.Infrastructure.Identity;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 namespace LMS.Application.Features.Assignments.Commands.SubmitAssignment;
 
 public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCommand, int>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserRepository _userRepository;
 
-    public SubmitAssignmentCommandHandler(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+    public SubmitAssignmentCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
     {
         _unitOfWork = unitOfWork;
-        _userManager = userManager;
+        _userRepository = userRepository;
     }
 
     public async Task<int> Handle(SubmitAssignmentCommand request, CancellationToken cancellationToken)
@@ -28,7 +26,7 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
         }
 
         // Check if student exists and is a Student
-        var student = await _userManager.FindByIdAsync(request.StudentId.ToString());
+        var student = await _userRepository.GetUserByIdAsync(request.StudentId);
         if (student == null)
         {
             throw new InvalidOperationException($"Student with ID {request.StudentId} not found.");

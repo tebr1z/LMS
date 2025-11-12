@@ -4,7 +4,9 @@ public enum AssignmentType
 {
     ReadingMaterial = 1,  // No score
     FileSubmission = 2,    // PDF, video, image
-    Test = 3,              // Quiz
-    Project = 4            // Graded manually
+    VideoSubmission = 3,   // Video submission
+    ImageSubmission = 4,   // Image submission
+    Test = 5,              // Quiz
+    Project = 6            // Graded manually
 }
 

@@ -80,6 +80,26 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
         ClockSkew = TimeSpan.Zero
     };
+
+    // Configure JWT authentication for SignalR
+    // Token can be passed in query string (access_token) or header (Authorization: Bearer <token>)
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            // If the request is for a SignalR hub and token is in query string
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+            {
+                context.Token = accessToken;
+            }
+
+            // Token can also be passed in Authorization header (default behavior)
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // Configure Authorization
@@ -93,19 +113,22 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 
 var supportedCultures = new[]
 {
-    new CultureInfo("en-US"),
-    new CultureInfo("tr-TR")
+    new CultureInfo("en"),
+    new CultureInfo("az"),
+    new CultureInfo("tr"),
+    new CultureInfo("ru")
 };
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
-    options.DefaultRequestCulture = new RequestCulture("en-US");
+    options.DefaultRequestCulture = new RequestCulture("en");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
     options.RequestCultureProviders = new List<IRequestCultureProvider>
     {
         new QueryStringRequestCultureProvider(),
-        new CookieRequestCultureProvider()
+        new CookieRequestCultureProvider(),
+        new AcceptLanguageHeaderRequestCultureProvider()
     };
 });
 
@@ -130,7 +153,8 @@ app.UseAuthorization();
 // Map Controllers
 app.MapControllers();
 
-// Map SignalR Hub
+// Map SignalR Hubs
 app.MapHub<NotificationHub>("/notificationHub");
+app.MapHub<ChatHub>("/chatHub");
 
 app.Run();

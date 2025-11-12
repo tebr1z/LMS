@@ -1,5 +1,6 @@
 using System.Reflection;
 using FluentValidation;
+using LMS.Application.Behaviors;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +13,12 @@ public static class DependencyInjection
         var assembly = Assembly.GetExecutingAssembly();
 
         // Register MediatR
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(assembly);
+            // Add validation behavior pipeline
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        });
 
         // Register FluentValidation
         services.AddValidatorsFromAssembly(assembly);

@@ -2,6 +2,7 @@ using LMS.Application.DTOs.Auth;
 using LMS.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace LMS.API.Controllers;
 
@@ -12,11 +13,13 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly ILogger<AuthController> _logger;
+    private readonly IStringLocalizer<AuthController> _localizer;
 
-    public AuthController(IAuthService authService, ILogger<AuthController> logger)
+    public AuthController(IAuthService authService, ILogger<AuthController> logger, IStringLocalizer<AuthController> localizer)
     {
         _authService = authService;
         _logger = logger;
+        _localizer = localizer;
     }
 
     [HttpPost("register")]
@@ -34,8 +37,8 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred during registration");
-            return StatusCode(500, new { message = "An error occurred during registration." });
+            _logger.LogError(ex, _localizer["RegistrationError"]);
+            return StatusCode(500, new { message = _localizer["RegistrationError"] });
         }
     }
 
@@ -54,8 +57,8 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred during login");
-            return StatusCode(500, new { message = "An error occurred during login." });
+            _logger.LogError(ex, _localizer["LoginError"]);
+            return StatusCode(500, new { message = _localizer["LoginError"] });
         }
     }
 
@@ -74,8 +77,8 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred during token refresh");
-            return StatusCode(500, new { message = "An error occurred during token refresh." });
+            _logger.LogError(ex, _localizer["TokenRefreshError"]);
+            return StatusCode(500, new { message = _localizer["TokenRefreshError"] });
         }
     }
 
@@ -86,12 +89,12 @@ public class AuthController : ControllerBase
         try
         {
             await _authService.RevokeTokenAsync(request.RefreshToken);
-            return Ok(new { message = "Token revoked successfully." });
+            return Ok(new { message = _localizer["TokenRevokedSuccessfully"] });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred during token revocation");
-            return StatusCode(500, new { message = "An error occurred during token revocation." });
+            _logger.LogError(ex, _localizer["TokenRevocationError"]);
+            return StatusCode(500, new { message = _localizer["TokenRevocationError"] });
         }
     }
 }

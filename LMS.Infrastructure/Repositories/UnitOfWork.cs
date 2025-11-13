@@ -26,6 +26,8 @@ public class UnitOfWork : IUnitOfWork
     private IAttendanceRepository? _attendances;
     private IStudentNoteRepository? _studentNotes;
     private IStudentFlagRepository? _studentFlags;
+    private IPaymentRepository? _payments;
+    private IInvoiceRepository? _invoices;
 
     public UnitOfWork(LmsDbContext context)
     {
@@ -85,6 +87,12 @@ public class UnitOfWork : IUnitOfWork
 
     public IStudentFlagRepository StudentFlags =>
         _studentFlags ??= new StudentFlagRepository(_context);
+
+    public IPaymentRepository Payments =>
+        _payments ??= new PaymentRepository(_context);
+
+    public IInvoiceRepository Invoices =>
+        _invoices ??= new InvoiceRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

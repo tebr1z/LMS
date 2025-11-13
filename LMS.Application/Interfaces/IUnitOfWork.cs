@@ -20,6 +20,8 @@ public interface IUnitOfWork : IDisposable
     IAttendanceRepository Attendances { get; }
     IStudentNoteRepository StudentNotes { get; }
     IStudentFlagRepository StudentFlags { get; }
+    IPaymentRepository Payments { get; }
+    IInvoiceRepository Invoices { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

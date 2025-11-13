@@ -32,7 +32,14 @@ public class AddCourseToGroupCommandHandler : IRequestHandler<AddCourseToGroupCo
             throw new InvalidOperationException($"CoursePrepared with ID {request.CoursePreparedId} not found.");
         }
 
-        // Check if CoursePrepared is already in the group
+        // Check if CourseInstance already exists for this CoursePrepared and Group (unique constraint)
+        var existingCourseInstance = await _unitOfWork.CourseInstances.GetByCoursePreparedAndGroupAsync(request.CoursePreparedId, request.GroupId);
+        if (existingCourseInstance != null)
+        {
+            throw new InvalidOperationException($"CourseInstance for CoursePrepared {request.CoursePreparedId} already exists in group {request.GroupId}.");
+        }
+
+        // Check if CoursePrepared is already linked to the group
         var existingCourseGroup = await _unitOfWork.CourseGroups.GetByGroupAndCourseAsync(request.GroupId, request.CoursePreparedId);
         if (existingCourseGroup != null)
         {
@@ -51,22 +58,46 @@ public class AddCourseToGroupCommandHandler : IRequestHandler<AddCourseToGroupCo
             throw new UnauthorizedAccessException("Only MasterAdmin or Admin can add courses to groups.");
         }
 
-        // When CoursePrepared is added to Group, create a Course instance (CourseTaken) with copy of DefaultContent
-        var courseTaken = new Course
+        // 1) Create CourseInstance copying CoursePrepared.DefaultContent -> CourseInstance.Content
+        var courseInstance = new CourseInstance
         {
+            CoursePreparedId = request.CoursePreparedId,
+            GroupId = request.GroupId,
             Title = coursePrepared.Title,
             Description = coursePrepared.Description,
-            CreatedBy = request.AddedBy,
+            Content = coursePrepared.DefaultContent, // Copy DefaultContent to Content
             CreatedAt = DateTime.UtcNow
         };
 
-        // Note: Course entity doesn't have a Content field, but if it had, we would copy:
-        // courseTaken.Content = coursePrepared.DefaultContent;
-        // Assignments remain separate (they stay with CoursePrepared)
-
-        // Add CourseTaken to database
-        await _unitOfWork.Courses.AddAsync(courseTaken);
+        await _unitOfWork.CourseInstances.AddAsync(courseInstance);
         await _unitOfWork.SaveChangesAsync();
+
+        // 2) Copy template assignments metadata if "copyAssignmentsFlag" true, else leave empty
+        if (request.CopyAssignmentsFlag)
+        {
+            var templateAssignments = await _unitOfWork.Assignments.GetAssignmentsByCoursePreparedIdAsync(request.CoursePreparedId);
+            
+            foreach (var templateAssignment in templateAssignments)
+            {
+                var instanceAssignment = new Assignment
+                {
+                    CourseInstanceId = courseInstance.Id,
+                    GroupId = request.GroupId,
+                    Title = templateAssignment.Title,
+                    Description = templateAssignment.Description,
+                    AssignmentType = templateAssignment.AssignmentType,
+                    MaxScore = templateAssignment.MaxScore,
+                    CreatedById = request.AddedBy,
+                    AllowEditAfterPublish = templateAssignment.AllowEditAfterPublish,
+                    AllowResubmit = templateAssignment.AllowResubmit,
+                    Deadline = null, // Clear deadline - teacher will set schedule
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.Assignments.AddAsync(instanceAssignment);
+            }
+        }
+        // else: leave empty - teacher will add assignments manually
 
         // Create CourseGroup link between Group and CoursePrepared
         var courseGroup = new CourseGroup
@@ -79,7 +110,8 @@ public class AddCourseToGroupCommandHandler : IRequestHandler<AddCourseToGroupCo
         await _unitOfWork.CourseGroups.AddAsync(courseGroup);
         await _unitOfWork.SaveChangesAsync();
 
-        return courseGroup.Id;
+        // 3) Return CourseInstanceId
+        return courseInstance.Id;
     }
 }
 

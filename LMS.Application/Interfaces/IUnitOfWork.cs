@@ -4,6 +4,7 @@ public interface IUnitOfWork : IDisposable
 {
     ICourseRepository Courses { get; }
     ICoursePreparedRepository CoursePrepareds { get; }
+    ICourseInstanceRepository CourseInstances { get; }
     IEnrollmentRepository Enrollments { get; }
     IMessageRepository Messages { get; }
     IGroupRepository Groups { get; }

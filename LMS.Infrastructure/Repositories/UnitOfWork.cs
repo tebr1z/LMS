@@ -10,6 +10,7 @@ public class UnitOfWork : IUnitOfWork
     private IDbContextTransaction? _transaction;
     private ICourseRepository? _courses;
     private ICoursePreparedRepository? _coursePrepareds;
+    private ICourseInstanceRepository? _courseInstances;
     private IEnrollmentRepository? _enrollments;
     private IMessageRepository? _messages;
     private IGroupRepository? _groups;
@@ -28,6 +29,9 @@ public class UnitOfWork : IUnitOfWork
 
     public ICoursePreparedRepository CoursePrepareds =>
         _coursePrepareds ??= new CoursePreparedRepository(_context);
+
+    public ICourseInstanceRepository CourseInstances =>
+        _courseInstances ??= new CourseInstanceRepository(_context);
 
     public IEnrollmentRepository Enrollments =>
         _enrollments ??= new EnrollmentRepository(_context);

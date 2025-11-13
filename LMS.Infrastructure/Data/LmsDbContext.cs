@@ -16,6 +16,7 @@ public class LmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     // DbSets
     public DbSet<Course> Courses { get; set; } = null!;
     public DbSet<CoursePrepared> CoursePrepareds { get; set; } = null!;
+    public DbSet<CourseInstance> CourseInstances { get; set; } = null!;
     public DbSet<Enrollment> Enrollments { get; set; } = null!;
     public DbSet<Message> Messages { get; set; } = null!;
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;

@@ -133,7 +133,8 @@ public class GroupsController : ControllerBase
             {
                 GroupId = groupId,
                 CoursePreparedId = request.CoursePreparedId,
-                AddedBy = addedBy
+                AddedBy = addedBy,
+                CopyAssignmentsFlag = request.CopyAssignmentsFlag
             };
 
             var result = await _mediator.Send(command, cancellationToken);
@@ -252,5 +253,6 @@ public class AddUserToGroupRequest
 public class AddCourseToGroupRequest
 {
     public int CoursePreparedId { get; set; }
+    public bool CopyAssignmentsFlag { get; set; } = false; // If true, copy template assignments metadata
 }
 

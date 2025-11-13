@@ -20,6 +20,14 @@ public class AssignmentRepository : EfRepository<Assignment>, IAssignmentReposit
             .ToListAsync();
     }
 
+    public async Task<List<Assignment>> GetAssignmentsByCoursePreparedIdAsync(int coursePreparedId)
+    {
+        return await _dbSet
+            .Where(a => a.CoursePreparedId == coursePreparedId)
+            .OrderByDescending(a => a.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task<Assignment?> GetAssignmentWithSubmissionsAsync(int assignmentId)
     {
         return await _dbSet

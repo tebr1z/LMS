@@ -16,7 +16,10 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
             .IsRequired(false); // Nullable: can be linked to CoursePrepared or Course
 
         builder.Property(a => a.CourseId)
-            .IsRequired(false); // Nullable: can be linked to CoursePrepared or Course
+            .IsRequired(false); // Nullable: can be linked to Course
+
+        builder.Property(a => a.CourseInstanceId)
+            .IsRequired(false); // Nullable: can be linked to CourseInstance
 
         builder.Property(a => a.GroupId)
             .IsRequired(false); // Nullable: can be course-wide or group-specific
@@ -64,12 +67,17 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
             .HasForeignKey(a => a.CourseId)
             .OnDelete(DeleteBehavior.SetNull); // Set null if Course is deleted
 
+        builder.HasOne(a => a.CourseInstance)
+            .WithMany(ci => ci.Assignments)
+            .HasForeignKey(a => a.CourseInstanceId)
+            .OnDelete(DeleteBehavior.Cascade); // Cascade delete if CourseInstance is deleted
+
         builder.HasOne(a => a.Group)
             .WithMany()
             .HasForeignKey(a => a.GroupId)
             .OnDelete(DeleteBehavior.SetNull); // Set null if group is deleted
 
-        // Check constraint: Either CoursePreparedId or CourseId must be set (handled at application level)
+        // Check constraint: Assignment can be linked to CoursePrepared (template), Course, or CourseInstance (handled at application level)
 
         builder.HasMany(a => a.Submissions)
             .WithOne(s => s.Assignment)

@@ -15,5 +15,6 @@ public class AssignmentSubmission : BaseEntity
 
     // Navigation properties
     public virtual Assignment Assignment { get; set; } = null!;
+    public virtual ICollection<QuizSession> QuizSessions { get; set; } = new List<QuizSession>(); // Links to quiz sessions if this submission came from a quiz
 }
 

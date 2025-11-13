@@ -24,5 +24,6 @@ public class Assignment : BaseEntity
     public virtual CourseInstance? CourseInstance { get; set; }
     public virtual Group? Group { get; set; }
     public virtual ICollection<AssignmentSubmission> Submissions { get; set; } = new List<AssignmentSubmission>();
+    public virtual Quiz? Quiz { get; set; } // One-to-one relationship with Quiz (if AssignmentType = Test)
 }
 

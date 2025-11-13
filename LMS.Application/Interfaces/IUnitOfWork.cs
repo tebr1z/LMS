@@ -13,6 +13,10 @@ public interface IUnitOfWork : IDisposable
     IAssignmentRepository Assignments { get; }
     IAssignmentSubmissionRepository AssignmentSubmissions { get; }
     IRepository<Domain.Entities.File> Files { get; }
+    IQuizRepository Quizzes { get; }
+    IQuizSessionRepository QuizSessions { get; }
+    IRepository<Domain.Entities.QuizQuestion> QuizQuestions { get; }
+    IRepository<Domain.Entities.QuizResponse> QuizResponses { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

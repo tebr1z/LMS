@@ -21,6 +21,9 @@ public static class DependencyInjection
         // Register Services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<IAdaptiveLearningService, AdaptiveLearningService>();
+        services.AddScoped<IAchievementEngine, AchievementEngine>();
         services.AddScoped<LMS.Application.Services.ISettingsService, LMS.Application.Services.SettingsService>();
 
         // Register File Storage Service

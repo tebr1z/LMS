@@ -9,11 +9,16 @@ public class EditAssignmentCommandHandler : IRequestHandler<EditAssignmentComman
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository;
+    private readonly IAuditService _auditService;
 
-    public EditAssignmentCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
+    public EditAssignmentCommandHandler(
+        IUnitOfWork unitOfWork,
+        IUserRepository userRepository,
+        IAuditService auditService)
     {
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
+        _auditService = auditService;
     }
 
     public async Task<int> Handle(EditAssignmentCommand request, CancellationToken cancellationToken)
@@ -24,6 +29,17 @@ public class EditAssignmentCommandHandler : IRequestHandler<EditAssignmentComman
         {
             throw new InvalidOperationException($"Assignment with ID {request.AssignmentId} not found.");
         }
+
+        // Store old values for audit
+        var oldValues = new
+        {
+            Title = assignment.Title,
+            Description = assignment.Description,
+            MaxScore = assignment.MaxScore,
+            Deadline = assignment.Deadline,
+            AllowEditAfterPublish = assignment.AllowEditAfterPublish,
+            AllowResubmit = assignment.AllowResubmit
+        };
 
         // Authorization check: Only creator Teacher or Admin can edit
         var editedByUser = await _userRepository.GetUserByIdAsync(request.EditedById);
@@ -95,6 +111,27 @@ public class EditAssignmentCommandHandler : IRequestHandler<EditAssignmentComman
 
         await _unitOfWork.Assignments.UpdateAsync(assignment);
         await _unitOfWork.SaveChangesAsync();
+
+        // Log audit entry
+        var newValues = new
+        {
+            Title = assignment.Title,
+            Description = assignment.Description,
+            MaxScore = assignment.MaxScore,
+            Deadline = assignment.Deadline,
+            AllowEditAfterPublish = assignment.AllowEditAfterPublish,
+            AllowResubmit = assignment.AllowResubmit
+        };
+
+        await _auditService.LogAuditAsync(
+            entity: "Assignment",
+            entityId: assignment.Id,
+            action: "Update",
+            userId: request.EditedById,
+            oldValue: oldValues,
+            newValue: newValues,
+            description: $"Assignment '{assignment.Title}' was edited by user {request.EditedById}",
+            cancellationToken);
 
         return assignment.Id;
     }

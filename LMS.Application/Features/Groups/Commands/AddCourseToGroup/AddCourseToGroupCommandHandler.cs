@@ -9,11 +9,16 @@ public class AddCourseToGroupCommandHandler : IRequestHandler<AddCourseToGroupCo
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository;
+    private readonly IAuditService _auditService;
 
-    public AddCourseToGroupCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
+    public AddCourseToGroupCommandHandler(
+        IUnitOfWork unitOfWork,
+        IUserRepository userRepository,
+        IAuditService auditService)
     {
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
+        _auditService = auditService;
     }
 
     public async Task<int> Handle(AddCourseToGroupCommand request, CancellationToken cancellationToken)
@@ -109,6 +114,27 @@ public class AddCourseToGroupCommandHandler : IRequestHandler<AddCourseToGroupCo
 
         await _unitOfWork.CourseGroups.AddAsync(courseGroup);
         await _unitOfWork.SaveChangesAsync();
+
+        // Log audit entry for CourseInstance creation
+        var courseInstanceValues = new
+        {
+            CourseInstanceId = courseInstance.Id,
+            CoursePreparedId = courseInstance.CoursePreparedId,
+            GroupId = courseInstance.GroupId,
+            Title = courseInstance.Title,
+            Description = courseInstance.Description,
+            Content = courseInstance.Content != null ? "Content copied from template" : null
+        };
+
+        await _auditService.LogAuditAsync(
+            entity: "CourseInstance",
+            entityId: courseInstance.Id,
+            action: "Create",
+            userId: request.AddedBy,
+            oldValue: null,
+            newValue: courseInstanceValues,
+            description: $"CourseInstance '{courseInstance.Title}' was created for Group {request.GroupId} by user {request.AddedBy}",
+            cancellationToken);
 
         // 3) Return CourseInstanceId
         return courseInstance.Id;

@@ -10,12 +10,18 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository;
     private readonly ISettingsService _settingsService;
+    private readonly IAuditService _auditService;
 
-    public GradeAssignmentCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository, ISettingsService settingsService)
+    public GradeAssignmentCommandHandler(
+        IUnitOfWork unitOfWork,
+        IUserRepository userRepository,
+        ISettingsService settingsService,
+        IAuditService auditService)
     {
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
         _settingsService = settingsService;
+        _auditService = auditService;
     }
 
     public async Task<bool> Handle(GradeAssignmentCommand request, CancellationToken cancellationToken)
@@ -26,6 +32,18 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
         {
             throw new InvalidOperationException($"Submission with ID {request.SubmissionId} not found.");
         }
+
+        // Store old values for audit
+        var oldValues = new
+        {
+            Score = submission.Score,
+            PercentageScore = submission.PercentageScore,
+            Passed = submission.Passed,
+            IsExcellent = submission.IsExcellent,
+            Feedback = submission.Feedback,
+            EvaluatedById = submission.EvaluatedById,
+            EvaluatedAt = submission.EvaluatedAt
+        };
 
         // Get assignment to validate score range and type
         var assignment = await _unitOfWork.Assignments.GetByIdAsync(submission.AssignmentId);
@@ -92,6 +110,28 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
 
         await _unitOfWork.AssignmentSubmissions.UpdateAsync(submission);
         await _unitOfWork.SaveChangesAsync();
+
+        // Log audit entry for grade change
+        var newValues = new
+        {
+            Score = submission.Score,
+            PercentageScore = submission.PercentageScore,
+            Passed = submission.Passed,
+            IsExcellent = submission.IsExcellent,
+            Feedback = submission.Feedback,
+            EvaluatedById = submission.EvaluatedById,
+            EvaluatedAt = submission.EvaluatedAt
+        };
+
+        await _auditService.LogAuditAsync(
+            entity: "Submission",
+            entityId: submission.Id,
+            action: "Grade",
+            userId: request.EvaluatedById,
+            oldValue: oldValues,
+            newValue: newValues,
+            description: $"Submission {submission.Id} for Assignment '{assignment.Title}' was graded by user {request.EvaluatedById}. Score: {submission.Score}/{assignment.MaxScore}",
+            cancellationToken);
 
         // Update student stats
         await UpdateStudentStatsAsync(submission.StudentId, assignment.CourseInstanceId);

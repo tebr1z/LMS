@@ -9,11 +9,16 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository;
+    private readonly IAuditService _auditService;
 
-    public SubmitAssignmentCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
+    public SubmitAssignmentCommandHandler(
+        IUnitOfWork unitOfWork,
+        IUserRepository userRepository,
+        IAuditService auditService)
     {
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
+        _auditService = auditService;
     }
 
     public async Task<int> Handle(SubmitAssignmentCommand request, CancellationToken cancellationToken)
@@ -88,8 +93,38 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
             existingSubmission.EvaluatedAt = null;
             existingSubmission.UpdatedAt = now;
 
+            // Store old values for audit
+            var oldSubmissionValues = new
+            {
+                FileUrl = existingSubmission.FileUrl,
+                AnswerText = existingSubmission.AnswerText,
+                SubmittedAt = existingSubmission.SubmittedAt,
+                Score = existingSubmission.Score,
+                Feedback = existingSubmission.Feedback
+            };
+
             await _unitOfWork.AssignmentSubmissions.UpdateAsync(existingSubmission);
             await _unitOfWork.SaveChangesAsync();
+
+            // Log audit entry for submission update
+            var newSubmissionValues = new
+            {
+                FileUrl = existingSubmission.FileUrl,
+                AnswerText = existingSubmission.AnswerText,
+                SubmittedAt = existingSubmission.SubmittedAt,
+                Score = existingSubmission.Score,
+                Feedback = existingSubmission.Feedback
+            };
+
+            await _auditService.LogAuditAsync(
+                entity: "Submission",
+                entityId: existingSubmission.Id,
+                action: "Update",
+                userId: request.StudentId,
+                oldValue: oldSubmissionValues,
+                newValue: newSubmissionValues,
+                description: $"Student {request.StudentId} resubmitted Assignment {request.AssignmentId}",
+                cancellationToken);
 
             return existingSubmission.Id;
         }
@@ -126,6 +161,27 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
 
         await _unitOfWork.AssignmentSubmissions.AddAsync(submission);
         await _unitOfWork.SaveChangesAsync(); // Save to get submission ID
+
+        // Log audit entry for submission creation
+        var submissionValues = new
+        {
+            AssignmentId = submission.AssignmentId,
+            StudentId = submission.StudentId,
+            FileUrl = submission.FileUrl,
+            AnswerText = submission.AnswerText,
+            SubmittedAt = submission.SubmittedAt,
+            TimeOnPageInSeconds = submission.TimeOnPageInSeconds
+        };
+
+        await _auditService.LogAuditAsync(
+            entity: "Submission",
+            entityId: submission.Id,
+            action: "Create",
+            userId: request.StudentId,
+            oldValue: null,
+            newValue: submissionValues,
+            description: $"Student {request.StudentId} submitted Assignment {request.AssignmentId}",
+            cancellationToken);
 
         // Link pre-submission telemetry to this submission
         var allTelemetryForLinking = await _unitOfWork.AssignmentTelemetry.ListAsync();

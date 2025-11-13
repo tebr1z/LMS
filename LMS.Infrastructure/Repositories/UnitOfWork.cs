@@ -33,6 +33,12 @@ public class UnitOfWork : IUnitOfWork
     private ISystemSettingsRepository? _systemSettings;
     private IStudentStatsRepository? _studentStats;
     private INotificationRepository? _notifications;
+    private IAuditLogRepository? _auditLogs;
+    private ILearningLevelRepository? _learningLevels;
+    private IAchievementRepository? _achievements;
+    private IUserAchievementRepository? _userAchievements;
+    private IRewardPointRepository? _rewardPoints;
+    private IRedeemableItemRepository? _redeemableItems;
 
     public UnitOfWork(LmsDbContext context)
     {
@@ -113,6 +119,24 @@ public class UnitOfWork : IUnitOfWork
 
     public INotificationRepository Notifications =>
         _notifications ??= new NotificationRepository(_context);
+
+    public IAuditLogRepository AuditLogs =>
+        _auditLogs ??= new AuditLogRepository(_context);
+
+    public ILearningLevelRepository LearningLevels =>
+        _learningLevels ??= new LearningLevelRepository(_context);
+
+    public IAchievementRepository Achievements =>
+        _achievements ??= new AchievementRepository(_context);
+
+    public IUserAchievementRepository UserAchievements =>
+        _userAchievements ??= new UserAchievementRepository(_context);
+
+    public IRewardPointRepository RewardPoints =>
+        _rewardPoints ??= new RewardPointRepository(_context);
+
+    public IRedeemableItemRepository RedeemableItems =>
+        _redeemableItems ??= new RedeemableItemRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

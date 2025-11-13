@@ -40,6 +40,12 @@ public class LmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<SystemSettings> SystemSettings { get; set; } = null!;
     public DbSet<StudentStats> StudentStats { get; set; } = null!;
     public DbSet<Notification> Notifications { get; set; } = null!;
+    public DbSet<AuditLog> AuditLogs { get; set; } = null!;
+    public DbSet<LearningLevel> LearningLevels { get; set; } = null!;
+    public DbSet<Achievement> Achievements { get; set; } = null!;
+    public DbSet<UserAchievement> UserAchievements { get; set; } = null!;
+    public DbSet<RewardPoint> RewardPoints { get; set; } = null!;
+    public DbSet<RedeemableItem> RedeemableItems { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

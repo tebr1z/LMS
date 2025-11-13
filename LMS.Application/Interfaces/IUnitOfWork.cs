@@ -27,6 +27,12 @@ public interface IUnitOfWork : IDisposable
     ISystemSettingsRepository SystemSettings { get; }
     IStudentStatsRepository StudentStats { get; }
     INotificationRepository Notifications { get; }
+    IAuditLogRepository AuditLogs { get; }
+    ILearningLevelRepository LearningLevels { get; }
+    IAchievementRepository Achievements { get; }
+    IUserAchievementRepository UserAchievements { get; }
+    IRewardPointRepository RewardPoints { get; }
+    IRedeemableItemRepository RedeemableItems { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

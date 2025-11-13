@@ -28,7 +28,7 @@ public class GetAssignmentSubmissionsQueryHandler : IRequestHandler<GetAssignmen
             throw new InvalidOperationException($"Assignment with ID {request.AssignmentId} not found.");
         }
 
-        // Authorization check: Teacher/Admin/Mentor (read-only for Mentor)
+        // Authorization check: Teacher/Admin/Mentor/StudentOffice (read-only for Mentor and StudentOffice)
         var currentUserIdClaim = request.UserId; // Assume UserId is passed in query
         var currentUser = await _userRepository.GetUserByIdAsync(currentUserIdClaim);
         if (currentUser == null)
@@ -36,11 +36,12 @@ public class GetAssignmentSubmissionsQueryHandler : IRequestHandler<GetAssignmen
             throw new UnauthorizedAccessException("Invalid user.");
         }
 
-        // Check if user is Teacher, Admin, or Mentor
+        // Check if user is Teacher, Admin, Mentor, or StudentOffice
         bool isAuthorized = currentUser.Role == UserRole.Teacher || 
                            currentUser.Role == UserRole.MasterAdmin || 
                            currentUser.Role == UserRole.Admin ||
-                           currentUser.Role == UserRole.Mentor;
+                           currentUser.Role == UserRole.Mentor ||
+                           currentUser.Role == UserRole.StudentOffice;
 
         // If Mentor, verify they belong to the group that has this assignment
         if (currentUser.Role == UserRole.Mentor && assignment.GroupId.HasValue)
@@ -53,7 +54,7 @@ public class GetAssignmentSubmissionsQueryHandler : IRequestHandler<GetAssignmen
         }
         else if (!isAuthorized)
         {
-            throw new UnauthorizedAccessException("Only Teacher, Admin, or Mentor can view assignment submissions.");
+            throw new UnauthorizedAccessException("Only Teacher, Admin, Mentor, or StudentOffice can view assignment submissions.");
         }
 
         // Get all submissions for this assignment with files & time on page & current score

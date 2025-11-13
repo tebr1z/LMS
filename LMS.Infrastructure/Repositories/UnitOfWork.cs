@@ -25,6 +25,7 @@ public class UnitOfWork : IUnitOfWork
     private IRepository<Domain.Entities.QuizResponse>? _quizResponses;
     private IAttendanceRepository? _attendances;
     private IStudentNoteRepository? _studentNotes;
+    private IStudentFlagRepository? _studentFlags;
 
     public UnitOfWork(LmsDbContext context)
     {
@@ -81,6 +82,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IStudentNoteRepository StudentNotes =>
         _studentNotes ??= new StudentNoteRepository(_context);
+
+    public IStudentFlagRepository StudentFlags =>
+        _studentFlags ??= new StudentFlagRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

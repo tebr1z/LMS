@@ -37,6 +37,8 @@ public class LmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<Invoice> Invoices { get; set; } = null!;
     public DbSet<AssignmentTelemetry> AssignmentTelemetry { get; set; } = null!;
     public DbSet<QuizTelemetry> QuizTelemetry { get; set; } = null!;
+    public DbSet<SystemSettings> SystemSettings { get; set; } = null!;
+    public DbSet<StudentStats> StudentStats { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

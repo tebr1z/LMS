@@ -21,6 +21,7 @@ public static class DependencyInjection
         // Register Services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<LMS.Application.Services.ISettingsService, LMS.Application.Services.SettingsService>();
 
         // Register File Storage Service
         var storageProvider = configuration["FileStorage:Provider"] ?? "Local";

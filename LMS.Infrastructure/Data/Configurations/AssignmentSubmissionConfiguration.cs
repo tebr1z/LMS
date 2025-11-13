@@ -43,6 +43,17 @@ public class AssignmentSubmissionConfiguration : IEntityTypeConfiguration<Assign
         builder.Property(s => s.TimeOnPageInSeconds)
             .IsRequired(false); // Time student spent on assignment page (aggregate)
 
+        builder.Property(s => s.Passed)
+            .IsRequired(false); // Whether assignment was passed (based on threshold)
+
+        builder.Property(s => s.IsExcellent)
+            .IsRequired(false); // Whether assignment score is above high threshold (excellent)
+
+        builder.Property(s => s.PercentageScore)
+            .IsRequired()
+            .HasDefaultValue(0)
+            .HasColumnType("decimal(5,2)"); // e.g., 85.50
+
         builder.Property(s => s.CreatedAt)
             .IsRequired();
 

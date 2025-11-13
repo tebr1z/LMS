@@ -1,4 +1,5 @@
 using LMS.Application.Features.Analytics.Queries.GetTopEngagedStudents;
+using LMS.Application.Features.Analytics.Queries.GetLeaderboard;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -49,6 +50,44 @@ public class AnalyticsController : ControllerBase
         {
             _logger.LogError(ex, "Error retrieving top engaged students");
             return StatusCode(500, new { message = "An error occurred while retrieving analytics." });
+        }
+    }
+
+    /// <summary>
+    /// Get leaderboard of top students ordered by averagePercent, submissions, lastActivity
+    /// Teachers and StudentOffice can view
+    /// </summary>
+    [HttpGet("leaderboard")]
+    [Authorize(Roles = "Teacher,StudentOffice,Admin,MasterAdmin")]
+    public async Task<ActionResult<IEnumerable<LeaderboardEntryDto>>> GetLeaderboard(
+        [FromQuery] int? courseInstanceId = null,
+        [FromQuery] string period = "overall",
+        [FromQuery] int? topN = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Validate period
+            var validPeriods = new[] { "week", "month", "overall" };
+            if (!validPeriods.Contains(period?.ToLower()))
+            {
+                return BadRequest(new { message = $"Period must be one of: {string.Join(", ", validPeriods)}" });
+            }
+
+            var query = new GetLeaderboardQuery
+            {
+                CourseInstanceId = courseInstanceId,
+                Period = period?.ToLower() ?? "overall",
+                TopN = topN ?? 10
+            };
+
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving leaderboard");
+            return StatusCode(500, new { message = "An error occurred while retrieving leaderboard." });
         }
     }
 }

@@ -1,4 +1,5 @@
 using LMS.Application.Interfaces;
+using LMS.Application.Services;
 using LMS.Domain.Entities;
 using LMS.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -13,11 +14,13 @@ public class QuizHub : Hub
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository;
+    private readonly ISettingsService _settingsService;
 
-    public QuizHub(IUnitOfWork unitOfWork, IUserRepository userRepository)
+    public QuizHub(IUnitOfWork unitOfWork, IUserRepository userRepository, ISettingsService settingsService)
     {
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
+        _settingsService = settingsService;
     }
 
     public override async Task OnConnectedAsync()
@@ -415,15 +418,17 @@ public class QuizHub : Hub
         // Map percentage score to Score (0..MaxScore)
         session.Score = (int)(session.PercentageScore / 100 * assignment.MaxScore);
 
-        // Check passing threshold
-        if (quiz.PassingThreshold.HasValue)
-        {
-            session.Passed = session.PercentageScore >= quiz.PassingThreshold.Value;
-        }
+        // Check passing threshold (use quiz threshold if set, otherwise use system default)
+        var quizPassPercent = quiz.PassingThreshold ?? await _settingsService.GetQuizPassPercentAsync();
+        session.Passed = session.PercentageScore >= quizPassPercent;
 
         // Create or update AssignmentSubmission
         var existingSubmission = await _unitOfWork.AssignmentSubmissions
             .GetSubmissionByAssignmentAndStudentAsync(quiz.AssignmentId, userId.Value);
+
+        // Check if excellent (use high threshold)
+        var highThreshold = await _settingsService.GetTeacherAssignmentHighThresholdAsync();
+        var isExcellent = session.PercentageScore >= highThreshold;
 
         AssignmentSubmission submission;
         if (existingSubmission == null)
@@ -447,6 +452,9 @@ public class QuizHub : Hub
                 }),
                 SubmittedAt = DateTime.UtcNow,
                 Score = session.Score,
+                PercentageScore = session.PercentageScore,
+                Passed = session.Passed,
+                IsExcellent = isExcellent,
                 EvaluatedById = assignment.CreatedById, // Auto-evaluated
                 EvaluatedAt = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow
@@ -475,6 +483,10 @@ public class QuizHub : Hub
             });
             submission.SubmittedAt = DateTime.UtcNow;
             submission.Score = session.Score;
+            submission.PercentageScore = session.PercentageScore;
+            submission.Passed = session.Passed;
+            submission.IsExcellent = isExcellent;
+            
             submission.EvaluatedById = assignment.CreatedById;
             submission.EvaluatedAt = DateTime.UtcNow;
             submission.UpdatedAt = DateTime.UtcNow;

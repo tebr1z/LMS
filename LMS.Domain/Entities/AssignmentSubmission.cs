@@ -8,6 +8,7 @@ public class AssignmentSubmission : BaseEntity
     public string? AnswerText { get; set; }
     public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
     public int? Score { get; set; }
+    public string? Feedback { get; set; }
     public int? EvaluatedById { get; set; }
     public DateTime? EvaluatedAt { get; set; }
     public int? TimeOnPageInSeconds { get; set; } // Time student spent on assignment page (aggregate)

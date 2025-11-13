@@ -8,5 +8,6 @@ public class SubmitAssignmentCommand : IRequest<int>
     public int StudentId { get; set; }
     public string? FileUrl { get; set; }
     public string? AnswerText { get; set; }
+    public int? TimeOnPageInSeconds { get; set; } // Time student spent on assignment page
 }
 

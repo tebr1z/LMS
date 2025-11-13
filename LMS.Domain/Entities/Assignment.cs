@@ -13,6 +13,7 @@ public class Assignment : BaseEntity
     public AssignmentType AssignmentType { get; set; } = AssignmentType.ReadingMaterial;
     public int MaxScore { get; set; } = 100;
     public int CreatedById { get; set; }
+    public bool IsPublished { get; set; } = false; // Whether assignment is visible to students
     public bool AllowEditAfterPublish { get; set; }
     public bool AllowResubmit { get; set; }
     public DateTime? Deadline { get; set; } // Nullable deadline

@@ -30,6 +30,10 @@ public class AssignmentSubmissionConfiguration : IEntityTypeConfiguration<Assign
         builder.Property(s => s.Score)
             .IsRequired(false); // Score is nullable, int type
 
+        builder.Property(s => s.Feedback)
+            .HasMaxLength(2000)
+            .IsRequired(false); // Feedback is nullable
+
         builder.Property(s => s.EvaluatedById)
             .IsRequired(false);
 

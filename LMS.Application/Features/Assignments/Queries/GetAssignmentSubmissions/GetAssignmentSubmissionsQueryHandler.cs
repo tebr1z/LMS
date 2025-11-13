@@ -27,7 +27,20 @@ public class GetAssignmentSubmissionsQueryHandler : IRequestHandler<GetAssignmen
             throw new InvalidOperationException($"Assignment with ID {request.AssignmentId} not found.");
         }
 
-        // Get all submissions for this assignment
+        // Authorization check: Teacher/Admin only
+        var currentUserIdClaim = request.UserId; // Assume UserId is passed in query
+        var currentUser = await _userRepository.GetUserByIdAsync(currentUserIdClaim);
+        if (currentUser == null)
+        {
+            throw new UnauthorizedAccessException("Invalid user.");
+        }
+
+        if (currentUser.Role != UserRole.Teacher && currentUser.Role != UserRole.MasterAdmin && currentUser.Role != UserRole.Admin)
+        {
+            throw new UnauthorizedAccessException("Only Teacher or Admin can view assignment submissions.");
+        }
+
+        // Get all submissions for this assignment with files & time on page & current score
         var submissions = await _unitOfWork.AssignmentSubmissions.GetSubmissionsByAssignmentIdAsync(request.AssignmentId);
         var submissionDtos = new List<AssignmentSubmissionDto>();
 
@@ -36,11 +49,18 @@ public class GetAssignmentSubmissionsQueryHandler : IRequestHandler<GetAssignmen
             var dto = _mapper.Map<AssignmentSubmissionDto>(submission);
             dto.AssignmentTitle = assignment.Title;
             dto.StudentName = await _userRepository.GetUserFullNameAsync(submission.StudentId) ?? "Unknown";
+            dto.FileUrl = submission.FileUrl;
+            dto.TimeOnPageInSeconds = submission.TimeOnPageInSeconds;
+            dto.Score = submission.Score;
+            dto.Feedback = submission.Feedback;
             
-            if (submission.EvaluatedBy.HasValue)
+            if (submission.EvaluatedById.HasValue)
             {
-                dto.EvaluatedByName = await _userRepository.GetUserFullNameAsync(submission.EvaluatedBy.Value) ?? "Unknown";
+                dto.EvaluatedBy = submission.EvaluatedById.Value;
+                dto.EvaluatedByName = await _userRepository.GetUserFullNameAsync(submission.EvaluatedById.Value) ?? "Unknown";
             }
+
+            dto.EvaluatedAt = submission.EvaluatedAt;
 
             submissionDtos.Add(dto);
         }

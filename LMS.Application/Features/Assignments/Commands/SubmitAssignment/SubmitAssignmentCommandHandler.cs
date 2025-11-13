@@ -18,11 +18,17 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
 
     public async Task<int> Handle(SubmitAssignmentCommand request, CancellationToken cancellationToken)
     {
-        // Check if assignment exists
+        // Check if assignment exists and is published
         var assignment = await _unitOfWork.Assignments.GetByIdAsync(request.AssignmentId);
         if (assignment == null)
         {
             throw new InvalidOperationException($"Assignment with ID {request.AssignmentId} not found.");
+        }
+
+        // Check if assignment is published
+        if (!assignment.IsPublished)
+        {
+            throw new InvalidOperationException("Assignment is not published yet.");
         }
 
         // Check if student exists and is a Student
@@ -37,10 +43,15 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
             throw new UnauthorizedAccessException("Only students can submit assignments.");
         }
 
-        // Check if deadline has passed (enforce deadline)
-        if (assignment.Deadline != default(DateTime) && assignment.Deadline < DateTime.UtcNow)
+        // Validate deadline: if Deadline exists and now > Deadline and resubmission not allowed -> reject
+        var now = DateTime.UtcNow;
+        if (assignment.Deadline.HasValue && now > assignment.Deadline.Value)
         {
-            throw new InvalidOperationException("Cannot submit assignment after deadline has passed.");
+            if (!assignment.AllowResubmit)
+            {
+                throw new InvalidOperationException("Cannot submit assignment after deadline has passed. Resubmission is not allowed.");
+            }
+            // If AllowResubmit is true, allow submission even after deadline
         }
 
         // Check if student already submitted
@@ -49,12 +60,22 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
         
         if (existingSubmission != null)
         {
-            // Update existing submission
+            // Business rule: AllowResubmit allows multiple submissions; otherwise only first accepted
+            if (!assignment.AllowResubmit)
+            {
+                throw new InvalidOperationException("Assignment does not allow resubmission. Only first submission is accepted.");
+            }
+
+            // Update existing submission (resubmission allowed)
             existingSubmission.FileUrl = request.FileUrl ?? existingSubmission.FileUrl;
             existingSubmission.AnswerText = request.AnswerText ?? existingSubmission.AnswerText;
-            existingSubmission.SubmittedAt = DateTime.UtcNow;
+            existingSubmission.TimeOnPageInSeconds = request.TimeOnPageInSeconds ?? existingSubmission.TimeOnPageInSeconds;
+            existingSubmission.SubmittedAt = now;
             existingSubmission.Score = null; // Reset score if resubmitting
-            existingSubmission.EvaluatedBy = null;
+            existingSubmission.Feedback = null;
+            existingSubmission.EvaluatedById = null;
+            existingSubmission.EvaluatedAt = null;
+            existingSubmission.UpdatedAt = now;
 
             await _unitOfWork.AssignmentSubmissions.UpdateAsync(existingSubmission);
             await _unitOfWork.SaveChangesAsync();
@@ -69,8 +90,9 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
             StudentId = request.StudentId,
             FileUrl = request.FileUrl,
             AnswerText = request.AnswerText,
-            SubmittedAt = DateTime.UtcNow,
-            CreatedAt = DateTime.UtcNow
+            TimeOnPageInSeconds = request.TimeOnPageInSeconds,
+            SubmittedAt = now,
+            CreatedAt = now
         };
 
         await _unitOfWork.AssignmentSubmissions.AddAsync(submission);

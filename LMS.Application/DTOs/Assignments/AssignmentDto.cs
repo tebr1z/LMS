@@ -29,8 +29,11 @@ public class AssignmentSubmissionDto
     public string? FileUrl { get; set; }
     public string? AnswerText { get; set; }
     public DateTime SubmittedAt { get; set; }
+    public int? TimeOnPageInSeconds { get; set; }
     public decimal? Score { get; set; }
+    public string? Feedback { get; set; }
     public int? EvaluatedBy { get; set; }
     public string? EvaluatedByName { get; set; }
+    public DateTime? EvaluatedAt { get; set; }
 }
 

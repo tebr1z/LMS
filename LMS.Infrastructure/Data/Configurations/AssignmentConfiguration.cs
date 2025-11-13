@@ -42,6 +42,10 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
         builder.Property(a => a.CreatedById)
             .IsRequired();
 
+        builder.Property(a => a.IsPublished)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.Property(a => a.AllowEditAfterPublish)
             .IsRequired()
             .HasDefaultValue(false);

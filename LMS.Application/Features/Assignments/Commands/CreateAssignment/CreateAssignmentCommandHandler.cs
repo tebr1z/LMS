@@ -8,29 +8,60 @@ namespace LMS.Application.Features.Assignments.Commands.CreateAssignment;
 public class CreateAssignmentCommandHandler : IRequestHandler<CreateAssignmentCommand, int>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserRepository _userRepository;
 
-    public CreateAssignmentCommandHandler(IUnitOfWork unitOfWork)
+    public CreateAssignmentCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
     {
         _unitOfWork = unitOfWork;
+        _userRepository = userRepository;
     }
 
     public async Task<int> Handle(CreateAssignmentCommand request, CancellationToken cancellationToken)
     {
-        // Check if course exists
-        var course = await _unitOfWork.Courses.GetByIdAsync(request.CourseId);
-        if (course == null)
+        // Check if CourseInstance exists
+        var courseInstance = await _unitOfWork.CourseInstances.GetByIdAsync(request.CourseInstanceId);
+        if (courseInstance == null)
         {
-            throw new InvalidOperationException($"Course with ID {request.CourseId} not found.");
+            throw new InvalidOperationException($"CourseInstance with ID {request.CourseInstanceId} not found.");
         }
+
+        // Authorization check: Only Teacher (assigned to CourseInstance/Group) or Admin can create
+        var createdByUser = await _userRepository.GetUserByIdAsync(request.CreatedById);
+        if (createdByUser == null)
+        {
+            throw new UnauthorizedAccessException("Invalid user performing the action.");
+        }
+
+        if (createdByUser.Role == UserRole.Teacher)
+        {
+            // Check if teacher is assigned to the group
+            var isTeacherInGroup = await _unitOfWork.GroupUsers.IsUserAssignedToGroupAsync(courseInstance.GroupId, request.CreatedById);
+            if (!isTeacherInGroup)
+            {
+                throw new UnauthorizedAccessException("Teacher must be assigned to the CourseInstance/Group to create assignments.");
+            }
+        }
+        else if (createdByUser.Role != UserRole.MasterAdmin && createdByUser.Role != UserRole.Admin)
+        {
+            throw new UnauthorizedAccessException("Only Teacher (assigned to CourseInstance/Group) or Admin can create assignments.");
+        }
+
+        // Business rule: ReadingMaterial type cannot be scored (MaxScore ignored)
+        var maxScore = request.AssignmentType == AssignmentType.ReadingMaterial ? 0 : request.MaxScore;
 
         var assignment = new Assignment
         {
-            CourseId = request.CourseId,
+            CourseInstanceId = request.CourseInstanceId,
+            GroupId = courseInstance.GroupId,
             Title = request.Title,
             Description = request.Description,
-            Type = request.Type,
+            AssignmentType = request.AssignmentType,
+            MaxScore = maxScore,
             Deadline = request.Deadline,
-            CreatedBy = request.CreatedBy,
+            AllowEditAfterPublish = request.AllowEditAfterPublish,
+            AllowResubmit = request.AllowResubmit,
+            CreatedById = request.CreatedById,
+            IsPublished = false, // Initially unpublished
             CreatedAt = DateTime.UtcNow
         };
 

@@ -17,46 +17,56 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
 
     public async Task<bool> Handle(GradeAssignmentCommand request, CancellationToken cancellationToken)
     {
-        // Check if assignment exists
-        var assignment = await _unitOfWork.Assignments.GetByIdAsync(request.AssignmentId);
-        if (assignment == null)
-        {
-            throw new InvalidOperationException($"Assignment with ID {request.AssignmentId} not found.");
-        }
-
-        // Check if submission exists and belongs to the assignment
+        // Check if submission exists
         var submission = await _unitOfWork.AssignmentSubmissions.GetByIdAsync(request.SubmissionId);
         if (submission == null)
         {
             throw new InvalidOperationException($"Submission with ID {request.SubmissionId} not found.");
         }
 
-        if (submission.AssignmentId != request.AssignmentId)
+        // Get assignment to validate score range and type
+        var assignment = await _unitOfWork.Assignments.GetByIdAsync(submission.AssignmentId);
+        if (assignment == null)
         {
-            throw new InvalidOperationException("Submission does not belong to the specified assignment.");
+            throw new InvalidOperationException($"Assignment with ID {submission.AssignmentId} not found.");
         }
 
-        // Check if evaluator exists and is a Teacher
-        var evaluator = await _userRepository.GetUserByIdAsync(request.EvaluatedBy);
+        // Authorization check: Teacher/Admin only
+        var evaluator = await _userRepository.GetUserByIdAsync(request.EvaluatedById);
         if (evaluator == null)
         {
-            throw new InvalidOperationException($"Evaluator with ID {request.EvaluatedBy} not found.");
+            throw new UnauthorizedAccessException("Invalid user performing the action.");
         }
 
         if (evaluator.Role != UserRole.Teacher && evaluator.Role != UserRole.MasterAdmin && evaluator.Role != UserRole.Admin)
         {
-            throw new UnauthorizedAccessException("Only teachers, admins, or master admins can grade assignments.");
+            throw new UnauthorizedAccessException("Only Teacher or Admin can grade assignments.");
         }
 
-        // Check if assignment type allows scoring
-        if (assignment.Type == AssignmentType.ReadingMaterial)
+        // Business rule: ReadingMaterial type cannot be scored (MaxScore ignored) — mark Score null
+        if (assignment.AssignmentType == AssignmentType.ReadingMaterial)
         {
-            throw new InvalidOperationException("ReadingMaterial assignments cannot be scored.");
+            // For ReadingMaterial, set score to null regardless of input
+            submission.Score = null;
+            submission.Feedback = request.Feedback;
+            submission.EvaluatedById = request.EvaluatedById;
+            submission.EvaluatedAt = DateTime.UtcNow;
+        }
+        else
+        {
+            // Validate score range: Score (0..MaxScore)
+            if (request.Score < 0 || request.Score > assignment.MaxScore)
+            {
+                throw new InvalidOperationException($"Score must be between 0 and {assignment.MaxScore}.");
+            }
+
+            submission.Score = request.Score;
+            submission.Feedback = request.Feedback;
+            submission.EvaluatedById = request.EvaluatedById;
+            submission.EvaluatedAt = DateTime.UtcNow;
         }
 
-        // Update submission with score
-        submission.Score = request.Score;
-        submission.EvaluatedBy = request.EvaluatedBy;
+        submission.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.AssignmentSubmissions.UpdateAsync(submission);
         await _unitOfWork.SaveChangesAsync();

@@ -39,7 +39,7 @@ public class QuizTelemetryConfiguration : IEntityTypeConfiguration<QuizTelemetry
         builder.HasOne(qt => qt.Quiz)
             .WithMany()
             .HasForeignKey(qt => qt.QuizId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction); // No cascade to avoid multiple cascade paths (Quiz deletion handled via Assignment cascade)
 
         builder.HasOne(qt => qt.QuizSession)
             .WithMany()

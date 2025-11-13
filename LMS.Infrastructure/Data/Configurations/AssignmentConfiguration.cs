@@ -79,7 +79,7 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
         builder.HasOne(a => a.Group)
             .WithMany()
             .HasForeignKey(a => a.GroupId)
-            .OnDelete(DeleteBehavior.SetNull); // Set null if group is deleted
+            .OnDelete(DeleteBehavior.NoAction); // No cascade to avoid multiple cascade paths (Group deletion handled via CourseInstance cascade)
 
         // Check constraint: Assignment can be linked to CoursePrepared (template), Course, or CourseInstance (handled at application level)
 

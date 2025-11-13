@@ -116,7 +116,13 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
         }
 
         // Get all submissions for this student (filtered by course instance if specified)
+        // Note: We need to load assignments separately to access AssignmentType
         var allSubmissions = await _unitOfWork.AssignmentSubmissions.ListAsync();
+        var allAssignments = await _unitOfWork.Assignments.ListAsync();
+        
+        // Create a lookup for assignment types
+        var assignmentTypeLookup = allAssignments.ToDictionary(a => a.Id, a => a.AssignmentType);
+        
         var studentSubmissions = allSubmissions
             .Where(s => s.StudentId == studentId)
             .ToList();
@@ -124,7 +130,7 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
         // Filter by course instance if specified
         if (courseInstanceId.HasValue)
         {
-            var assignmentsInCourse = (await _unitOfWork.Assignments.ListAsync())
+            var assignmentsInCourse = allAssignments
                 .Where(a => a.CourseInstanceId == courseInstanceId.Value)
                 .Select(a => a.Id)
                 .ToHashSet();
@@ -135,7 +141,6 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
         }
 
         // Get all assignments for max score calculation
-        var allAssignments = await _unitOfWork.Assignments.ListAsync();
         var relevantAssignments = allAssignments
             .Where(a => studentSubmissions.Any(s => s.AssignmentId == a.Id))
             .ToList();
@@ -152,7 +157,7 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
         
         stats.AveragePercent = stats.TotalPossiblePoints > 0 
             ? (decimal)(stats.TotalPoints / (double)stats.TotalPossiblePoints * 100) 
-            : (scoredSubmissions.Any() ? scoredSubmissions.Average(s => (double)s.PercentageScore) : 0);
+            : (scoredSubmissions.Any() ? (decimal)scoredSubmissions.Average(s => (double)s.PercentageScore) : 0);
         
         stats.AssignmentsPassedCount = studentSubmissions.Count(s => s.Passed == true);
         stats.AssignmentsCompletedCount = studentSubmissions.Count(s => s.Score.HasValue || !string.IsNullOrEmpty(s.AnswerText) || !string.IsNullOrEmpty(s.FileUrl));
@@ -167,7 +172,7 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
         {
             var quizzesInCourse = (await _unitOfWork.Quizzes.ListAsync())
                 .Where(q => relevantAssignments.Any(a => a.Id == q.AssignmentId))
-                .Select(q => q.QuizId)
+                .Select(q => q.Id) // Quiz.Id is the foreign key in QuizSession
                 .ToHashSet();
 
             studentQuizSessions = studentQuizSessions
@@ -203,7 +208,6 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
         }
         
         await _unitOfWork.SaveChangesAsync();
-    }
     }
 }
 

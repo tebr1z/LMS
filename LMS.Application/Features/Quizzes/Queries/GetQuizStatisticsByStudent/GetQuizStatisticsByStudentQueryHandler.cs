@@ -90,10 +90,10 @@ public class GetQuizStatisticsByStudentQueryHandler : IRequestHandler<GetQuizSta
             CompletedQuizzes = completedSessions.Count,
             PassedQuizzes = completedSessions.Count(s => s.Passed == true),
             AveragePercentageScore = completedSessions.Any() 
-                ? completedSessions.Average(s => (double)s.PercentageScore) 
+                ? (decimal)completedSessions.Average(s => (double)s.PercentageScore) 
                 : 0,
             AverageScore = completedSessions.Any()
-                ? completedSessions.Average(s => (double)(s.Score ?? 0))
+                ? (decimal)completedSessions.Average(s => (double)(s.Score ?? 0))
                 : 0
         };
 

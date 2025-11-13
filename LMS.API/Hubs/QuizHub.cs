@@ -536,7 +536,7 @@ public class QuizHub : Hub
         // Load existing responses to preserve order
         var responses = session.Responses?.ToList() ?? new List<QuizResponse>();
 
-        return questions.Select(q => new
+        return questions.Select(q => (object)new
         {
             q.Id,
             q.Text,

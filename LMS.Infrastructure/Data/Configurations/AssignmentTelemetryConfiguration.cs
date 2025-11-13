@@ -39,7 +39,7 @@ public class AssignmentTelemetryConfiguration : IEntityTypeConfiguration<Assignm
         builder.HasOne(at => at.Assignment)
             .WithMany()
             .HasForeignKey(at => at.AssignmentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction); // No cascade to avoid multiple cascade paths (Assignment deletion handled via Submission cascade)
 
         builder.HasOne(at => at.Submission)
             .WithMany()

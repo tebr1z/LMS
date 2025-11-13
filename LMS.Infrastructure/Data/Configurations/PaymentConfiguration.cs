@@ -1,4 +1,5 @@
 using LMS.Domain.Entities;
+using LMS.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -31,7 +32,8 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.Status)
             .IsRequired()
             .HasConversion<int>() // Store enum as int
-            .HasDefaultValue(1); // Default: Pending
+            .HasDefaultValue(PaymentStatus.Pending) // Default: Pending
+            .HasSentinel(PaymentStatus.Pending); // Sentinel value for default
 
         builder.Property(p => p.PaidAt)
             .IsRequired(false);

@@ -97,7 +97,7 @@ public class GroupRepository : EfRepository<Group>, IGroupRepository
     {
         // Admin sees groups they created
         return await _dbSet
-            .Where(g => g.CreatedBy == adminId)
+            .Where(g => g.CreatedById == adminId)
             .Include(g => g.GroupUsers)
             .Include(g => g.CourseGroups)
             .ToListAsync();

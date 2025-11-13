@@ -82,7 +82,7 @@ public class FilesController : ControllerBase
                 cancellationToken);
 
             // Store File metadata in File table
-            var fileEntity = new File
+            var fileEntity = new Domain.Entities.File
             {
                 Url = fileUrl,
                 FileName = file.FileName,

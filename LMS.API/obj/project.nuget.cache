@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "30LN644DiE1vEW/fH9hLm5zHB7/3irjQNAIP7mf/6EuFba2rgWzIdH78Hr7G2I7Lp71CFSJJh+tUdFKScSG+ZQ==",
+  "dgSpecHash": "Dz5APCkoFbVcSMmf5Edmgs0Evjbktc7AitqqXFYxu2oG0uK3PJMnLWa/yBNkdWtFhjxtXGEKO9v3j4CSiPNGSg==",
   "success": true,
   "projectFilePath": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.API\\LMS.API.csproj",
   "expectedPackageFiles": [
@@ -59,6 +59,7 @@
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\8.0.0\\microsoft.extensions.caching.abstractions.8.0.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.caching.memory\\8.0.0\\microsoft.extensions.caching.memory.8.0.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.configuration.binder\\8.0.0\\microsoft.extensions.configuration.binder.8.0.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\8.0.0\\microsoft.extensions.dependencyinjection.8.0.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.0\\microsoft.extensions.dependencyinjection.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.dependencymodel\\8.0.0\\microsoft.extensions.dependencymodel.8.0.0.nupkg.sha512",

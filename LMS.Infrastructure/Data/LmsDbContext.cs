@@ -25,7 +25,7 @@ public class LmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<GroupUser> GroupUsers { get; set; } = null!;
     public DbSet<Assignment> Assignments { get; set; } = null!;
     public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; } = null!;
-    public DbSet<File> Files { get; set; } = null!;
+    public DbSet<Domain.Entities.File> Files { get; set; } = null!;
     public DbSet<Quiz> Quizzes { get; set; } = null!;
     public DbSet<QuizQuestion> QuizQuestions { get; set; } = null!;
     public DbSet<QuizResponse> QuizResponses { get; set; } = null!;
@@ -39,6 +39,7 @@ public class LmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<QuizTelemetry> QuizTelemetry { get; set; } = null!;
     public DbSet<SystemSettings> SystemSettings { get; set; } = null!;
     public DbSet<StudentStats> StudentStats { get; set; } = null!;
+    public DbSet<Notification> Notifications { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

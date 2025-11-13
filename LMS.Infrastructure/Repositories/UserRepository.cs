@@ -39,5 +39,17 @@ public class UserRepository : IUserRepository
         var user = await _userManager.FindByIdAsync(userId.ToString());
         return user != null;
     }
+
+    public async Task<List<UserDetails>> ListAsync()
+    {
+        var users = _userManager.Users.ToList();
+        return users.Select(user => new UserDetails
+        {
+            Id = user.Id,
+            FullName = user.FullName,
+            Role = user.Role,
+            Email = user.Email ?? string.Empty
+        }).ToList();
+    }
 }
 

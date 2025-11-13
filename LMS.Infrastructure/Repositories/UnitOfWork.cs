@@ -32,6 +32,7 @@ public class UnitOfWork : IUnitOfWork
     private IQuizTelemetryRepository? _quizTelemetry;
     private ISystemSettingsRepository? _systemSettings;
     private IStudentStatsRepository? _studentStats;
+    private INotificationRepository? _notifications;
 
     public UnitOfWork(LmsDbContext context)
     {
@@ -109,6 +110,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IStudentStatsRepository StudentStats =>
         _studentStats ??= new StudentStatsRepository(_context);
+
+    public INotificationRepository Notifications =>
+        _notifications ??= new NotificationRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

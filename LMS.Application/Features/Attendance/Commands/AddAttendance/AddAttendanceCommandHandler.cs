@@ -77,7 +77,7 @@ public class AddAttendanceCommandHandler : IRequestHandler<AddAttendanceCommand,
         }
 
         // Create new attendance
-        var attendance = new Attendance
+        var attendance = new Domain.Entities.Attendance
         {
             GroupId = request.GroupId,
             StudentId = request.StudentId,

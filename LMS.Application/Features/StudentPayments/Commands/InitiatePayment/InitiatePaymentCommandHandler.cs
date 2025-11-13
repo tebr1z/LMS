@@ -2,6 +2,7 @@ using LMS.Application.Interfaces;
 using LMS.Domain.Entities;
 using LMS.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 
 namespace LMS.Application.Features.StudentPayments.Commands.InitiatePayment;
 

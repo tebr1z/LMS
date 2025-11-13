@@ -128,21 +128,21 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
         await _unitOfWork.SaveChangesAsync(); // Save to get submission ID
 
         // Link pre-submission telemetry to this submission
-        var allTelemetry = await _unitOfWork.AssignmentTelemetry.ListAsync();
-        var preSubmissionTelemetry = allTelemetry
+        var allTelemetryForLinking = await _unitOfWork.AssignmentTelemetry.ListAsync();
+        var preSubmissionTelemetryForLinking = allTelemetryForLinking
             .Where(t => t.StudentId == request.StudentId && 
                        t.AssignmentId == request.AssignmentId &&
                        t.SubmissionId == null)
             .ToList();
 
-        foreach (var telemetry in preSubmissionTelemetry)
+        foreach (var telemetry in preSubmissionTelemetryForLinking)
         {
             telemetry.SubmissionId = submission.Id;
             await _unitOfWork.AssignmentTelemetry.UpdateAsync(telemetry);
         }
 
         // Recalculate total time from all linked telemetry
-        if (preSubmissionTelemetry.Any())
+        if (preSubmissionTelemetryForLinking.Any())
         {
             var totalTime = await _unitOfWork.AssignmentTelemetry.GetTotalTimeOnPageBySubmissionAsync(submission.Id);
             submission.TimeOnPageInSeconds = totalTime;

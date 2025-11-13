@@ -60,7 +60,12 @@ public class GetLeaderboardQueryHandler : IRequestHandler<GetLeaderboardQuery, I
 
         // Get user names
         var allUsers = await _userRepository.ListAsync();
-        var userLookup = allUsers.ToDictionary(u => u.Id, u => _userRepository.GetUserFullNameAsync(u.Id).Result ?? "Unknown");
+        var userLookup = new Dictionary<int, string>();
+        foreach (var user in allUsers)
+        {
+            var fullName = await _userRepository.GetUserFullNameAsync(user.Id);
+            userLookup[user.Id] = fullName ?? "Unknown";
+        }
 
         // Map to DTOs and calculate rankings
         var leaderboardEntries = new List<LeaderboardEntryDto>();

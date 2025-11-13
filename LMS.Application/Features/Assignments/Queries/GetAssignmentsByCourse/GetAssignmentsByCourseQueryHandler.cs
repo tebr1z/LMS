@@ -34,8 +34,8 @@ public class GetAssignmentsByCourseQueryHandler : IRequestHandler<GetAssignments
         {
             var dto = _mapper.Map<AssignmentDto>(assignment);
             dto.CourseTitle = course.Title;
-            dto.CreatedByName = await _userRepository.GetUserFullNameAsync(assignment.CreatedBy) ?? "Unknown";
-            dto.TypeName = assignment.Type.ToString();
+            dto.CreatedByName = await _userRepository.GetUserFullNameAsync(assignment.CreatedById) ?? "Unknown";
+            dto.TypeName = assignment.AssignmentType.ToString();
             dto.IsDeadlinePassed = assignment.Deadline < DateTime.UtcNow;
             dto.SubmissionCount = assignment.Submissions?.Count ?? 0;
             assignmentDtos.Add(dto);

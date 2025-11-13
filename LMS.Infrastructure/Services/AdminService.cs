@@ -164,7 +164,9 @@ public class AdminService : IAdminService
             foreach (var group in groups)
             {
                 // Get creator name
-                var creatorName = await _userRepository.GetUserFullNameAsync(group.CreatedBy) ?? "Unknown";
+                var creatorName = group.CreatedById.HasValue 
+                    ? await _userRepository.GetUserFullNameAsync(group.CreatedById.Value) ?? "Unknown"
+                    : "Unknown";
 
                 groupInfos.Add(new GroupInfo
                 {

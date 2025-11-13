@@ -26,6 +26,7 @@ public interface IUnitOfWork : IDisposable
     IQuizTelemetryRepository QuizTelemetry { get; }
     ISystemSettingsRepository SystemSettings { get; }
     IStudentStatsRepository StudentStats { get; }
+    INotificationRepository Notifications { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

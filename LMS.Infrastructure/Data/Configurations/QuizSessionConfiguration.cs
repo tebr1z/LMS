@@ -63,7 +63,7 @@ public class QuizSessionConfiguration : IEntityTypeConfiguration<QuizSession>
         builder.HasOne(qs => qs.Quiz)
             .WithMany(q => q.Sessions)
             .HasForeignKey(qs => qs.QuizId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction); // No cascade to avoid multiple cascade paths (Quiz deletion handled via Assignment cascade)
 
         builder.HasOne(qs => qs.Assignment)
             .WithMany()

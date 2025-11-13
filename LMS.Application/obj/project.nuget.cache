@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "vfj2zQ+jmNp28fQKzQpp+NNUQB554i2UCSeQur54UduoAzATOxaAO+p2pmd/FM0BFy7ADQlUNoD/oBehOQgW/Q==",
+  "dgSpecHash": "XnwcGjkc1ZSHRzsFKHKR+pKfLUq6s9UIMl74uZfgo0m7PxToxoTqXhYFH6SI5cIArHCYPgNN/OOg/Cunce0tkA==",
   "success": true,
   "projectFilePath": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Application\\LMS.Application.csproj",
   "expectedPackageFiles": [
@@ -10,8 +10,12 @@
     "C:\\Users\\Windows 11\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\12.1.0\\fluentvalidation.dependencyinjectionextensions.12.1.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\mediatr\\13.1.0\\mediatr.13.1.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
+    "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.aspnetcore.http.abstractions\\2.2.0\\microsoft.aspnetcore.http.abstractions.2.2.0.nupkg.sha512",
+    "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.aspnetcore.http.features\\2.2.0\\microsoft.aspnetcore.http.features.2.2.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.0\\microsoft.aspnetcore.openapi.10.0.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
+    "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.configuration.binder\\8.0.0\\microsoft.extensions.configuration.binder.8.0.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.0\\microsoft.extensions.dependencyinjection.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.localization\\10.0.0\\microsoft.extensions.localization.10.0.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.extensions.localization.abstractions\\10.0.0\\microsoft.extensions.localization.abstractions.10.0.0.nupkg.sha512",
@@ -22,7 +26,8 @@
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.14.0\\microsoft.identitymodel.jsonwebtokens.8.14.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.identitymodel.logging\\8.14.0\\microsoft.identitymodel.logging.8.14.0.nupkg.sha512",
     "C:\\Users\\Windows 11\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.14.0\\microsoft.identitymodel.tokens.8.14.0.nupkg.sha512",
-    "C:\\Users\\Windows 11\\.nuget\\packages\\system.diagnostics.diagnosticsource\\10.0.0\\system.diagnostics.diagnosticsource.10.0.0.nupkg.sha512"
+    "C:\\Users\\Windows 11\\.nuget\\packages\\system.diagnostics.diagnosticsource\\10.0.0\\system.diagnostics.diagnosticsource.10.0.0.nupkg.sha512",
+    "C:\\Users\\Windows 11\\.nuget\\packages\\system.text.encodings.web\\4.5.0\\system.text.encodings.web.4.5.0.nupkg.sha512"
   ],
   "logs": []
 }

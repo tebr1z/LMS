@@ -43,10 +43,7 @@ public class QuizConfiguration : IEntityTypeConfiguration<Quiz>
             .HasForeignKey(qq => qq.QuizId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasMany(q => q.Sessions)
-            .WithOne(qs => qs.Quiz)
-            .HasForeignKey(qs => qs.QuizId)
-            .OnDelete(DeleteBehavior.Cascade);
+        // Note: Sessions relationship is configured in QuizSessionConfiguration with NoAction to avoid cascade paths
 
         // Unique constraint: one Quiz per Assignment
         builder.HasIndex(q => q.AssignmentId)

@@ -26,7 +26,7 @@ public class GetQuizStatisticsByGroupQueryHandler : IRequestHandler<GetQuizStati
         // Get all students in group
         var groupUsers = await _unitOfWork.GroupUsers.GetGroupUsersByGroupIdAsync(request.GroupId);
         var studentIds = groupUsers
-            .Where(gu => gu.Role == Domain.Enums.UserRole.Student)
+            .Where(gu => gu.Role == Domain.Enums.GroupRole.Student)
             .Select(gu => gu.UserId)
             .ToList();
 
@@ -84,7 +84,7 @@ public class GetQuizStatisticsByGroupQueryHandler : IRequestHandler<GetQuizStati
 
             if (!studentSessions.Any()) continue;
 
-            var sessionDtos = new List<QuizSessionStatisticsDto>();
+            var sessionDtos = new List<GroupQuizSessionStatisticsDto>();
             foreach (var session in studentSessions)
             {
                 var sessionWithResponses = await _unitOfWork.QuizSessions.GetSessionWithResponsesAsync(session.Id);
@@ -95,7 +95,7 @@ public class GetQuizStatisticsByGroupQueryHandler : IRequestHandler<GetQuizStati
 
                 if (quiz == null || assignment == null) continue;
 
-                sessionDtos.Add(new QuizSessionStatisticsDto
+                sessionDtos.Add(new GroupQuizSessionStatisticsDto
                 {
                     SessionId = sessionWithResponses.Id,
                     QuizId = quiz.Id,
@@ -127,10 +127,10 @@ public class GetQuizStatisticsByGroupQueryHandler : IRequestHandler<GetQuizStati
                 CompletedSessionsCount = completedSessions.Count,
                 PassedSessionsCount = completedSessions.Count(s => s.Passed == true),
                 AveragePercentageScore = completedSessions.Any()
-                    ? completedSessions.Average(s => (double)s.PercentageScore)
+                    ? (decimal)completedSessions.Average(s => (double)s.PercentageScore)
                     : 0,
                 AverageScore = completedSessions.Any()
-                    ? completedSessions.Average(s => (double)(s.Score ?? 0))
+                    ? (decimal)completedSessions.Average(s => (double)(s.Score ?? 0))
                     : 0,
                 Sessions = sessionDtos
             });
@@ -143,15 +143,15 @@ public class GetQuizStatisticsByGroupQueryHandler : IRequestHandler<GetQuizStati
 
         var overall = new GroupOverallStatisticsDto
         {
-            TotalStudents = studentIds.Count,
+            TotalStudents = studentIds.Count(),
             StudentsWhoTookQuiz = studentStatistics.Count,
             StudentsWhoCompleted = studentStatistics.Count(s => s.CompletedSessionsCount > 0),
             StudentsWhoPassed = studentStatistics.Count(s => s.PassedSessionsCount > 0),
             AveragePercentageScore = allCompletedSessions.Any()
-                ? allCompletedSessions.Average(s => (double)s.PercentageScore)
+                ? (decimal)allCompletedSessions.Average(s => (double)s.PercentageScore)
                 : 0,
             AverageScore = allCompletedSessions.Any()
-                ? allCompletedSessions.Average(s => (double)(s.Score ?? 0))
+                ? (decimal)allCompletedSessions.Average(s => (double)(s.Score ?? 0))
                 : 0
         };
 

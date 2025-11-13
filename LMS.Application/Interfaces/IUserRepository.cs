@@ -7,6 +7,7 @@ public interface IUserRepository
     Task<string?> GetUserFullNameAsync(int userId);
     Task<UserDetails?> GetUserByIdAsync(int userId);
     Task<bool> UserExistsAsync(int userId);
+    Task<List<UserDetails>> ListAsync(); // Get all users
 }
 
 public class UserDetails

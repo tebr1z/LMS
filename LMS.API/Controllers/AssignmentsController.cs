@@ -46,9 +46,9 @@ public class AssignmentsController : ControllerBase
                 return Unauthorized(new { message = "Invalid user token." });
             }
 
-            command.CreatedBy = userId;
+            command.CreatedById = userId;
             var result = await _mediator.Send(command, cancellationToken);
-            return CreatedAtAction(nameof(GetAssignmentsByCourse), new { courseId = command.CourseId }, result);
+            return CreatedAtAction(nameof(GetAssignmentsByCourse), new { courseId = command.CourseInstanceId }, result);
         }
         catch (InvalidOperationException ex)
         {
@@ -212,10 +212,10 @@ public class AssignmentsController : ControllerBase
 
             var command = new GradeAssignmentCommand
             {
-                AssignmentId = assignmentId,
                 SubmissionId = request.SubmissionId,
-                Score = request.Score,
-                EvaluatedBy = evaluatorId
+                Score = (int)request.Score, // Convert decimal to int
+                EvaluatedById = evaluatorId,
+                Feedback = request.Feedback ?? null
             };
 
             var result = await _mediator.Send(command, cancellationToken);
@@ -262,5 +262,6 @@ public class GradeAssignmentRequest
 {
     public int SubmissionId { get; set; }
     public decimal Score { get; set; }
+    public string? Feedback { get; set; }
 }
 

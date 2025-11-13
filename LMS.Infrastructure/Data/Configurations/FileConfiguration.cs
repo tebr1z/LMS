@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LMS.Infrastructure.Data.Configurations;
 
-public class FileConfiguration : IEntityTypeConfiguration<File>
+public class FileConfiguration : IEntityTypeConfiguration<LMS.Domain.Entities.File>
 {
-    public void Configure(EntityTypeBuilder<File> builder)
+    public void Configure(EntityTypeBuilder<LMS.Domain.Entities.File> builder)
     {
         builder.ToTable("Files");
 

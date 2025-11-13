@@ -26,10 +26,10 @@ public class StudentQuizStatisticsDto
     public int PassedSessionsCount { get; set; }
     public decimal AveragePercentageScore { get; set; }
     public decimal AverageScore { get; set; }
-    public List<QuizSessionStatisticsDto> Sessions { get; set; } = new();
+    public List<GroupQuizSessionStatisticsDto> Sessions { get; set; } = new();
 }
 
-public class QuizSessionStatisticsDto
+public class GroupQuizSessionStatisticsDto
 {
     public int SessionId { get; set; }
     public int QuizId { get; set; }

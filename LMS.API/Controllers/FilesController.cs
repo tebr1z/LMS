@@ -1,4 +1,6 @@
+using LMS.Application.Interfaces;
 using LMS.Application.Interfaces.Storage;
+using LMS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,22 +13,28 @@ namespace LMS.API.Controllers;
 public class FilesController : ControllerBase
 {
     private readonly IFileStorageService _fileStorageService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<FilesController> _logger;
 
-    // Allowed file extensions
-    private static readonly string[] AllowedExtensions = { ".pdf", ".jpg", ".jpeg", ".png", ".mp4", ".docx" };
-    private const long MaxFileSize = 100_000_000; // 100 MB
+    // Allowed file extensions: pdf, docx, jpg, jpeg, png, mp4
+    private static readonly string[] AllowedExtensions = { ".pdf", ".docx", ".jpg", ".jpeg", ".png", ".mp4" };
+    private const long MaxFileSize = 50_000_000; // 50 MB
 
-    public FilesController(IFileStorageService fileStorageService, ILogger<FilesController> logger)
+    public FilesController(
+        IFileStorageService fileStorageService,
+        IUnitOfWork unitOfWork,
+        ILogger<FilesController> logger)
     {
         _fileStorageService = fileStorageService;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
     /// <summary>
     /// Upload a file and get the FileUrl
-    /// Allowed file types: PDF, JPG, PNG, MP4, DOCX
-    /// Maximum file size: 100 MB
+    /// Validates extensions: pdf, docx, jpg, jpeg, png, mp4
+    /// Maximum file size: 50 MB
+    /// Stores File metadata in File table
     /// </summary>
     [HttpPost("upload")]
     [RequestSizeLimit(MaxFileSize)]
@@ -43,16 +51,16 @@ public class FilesController : ControllerBase
                 return BadRequest(new { message = "No file provided or file is empty." });
             }
 
-            // Validate file extension
+            // Validate file extension: pdf, docx, jpg, jpeg, png, mp4
             var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!AllowedExtensions.Contains(fileExtension))
             {
                 return BadRequest(new { 
-                    message = $"Invalid file type. Allowed types: PDF, JPG, PNG, MP4, DOCX. Received: {fileExtension}" 
+                    message = $"Invalid file type. Allowed types: PDF, DOCX, JPG, JPEG, PNG, MP4. Received: {fileExtension}" 
                 });
             }
 
-            // Validate file size
+            // Validate file size: Max size: 50 MB
             if (file.Length > MaxFileSize)
             {
                 return BadRequest(new { 
@@ -60,16 +68,36 @@ public class FilesController : ControllerBase
                 });
             }
 
-            // Upload file
-            using var fileStream = file.OpenReadStream();
-            var fileUrl = await _fileStorageService.UploadFileAsync(
-                fileStream,
-                file.FileName,
-                file.ContentType,
+            // Get current user ID from claims
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var uploadedById))
+            {
+                return Unauthorized(new { message = "Invalid user token." });
+            }
+
+            // Upload file using IFormFile overload
+            var fileUrl = await _fileStorageService.UploadAsync(
+                file,
                 folder: folder,
                 cancellationToken);
 
-            _logger.LogInformation("File uploaded successfully: {FileName} -> {FileUrl}", file.FileName, fileUrl);
+            // Store File metadata in File table
+            var fileEntity = new File
+            {
+                Url = fileUrl,
+                FileName = file.FileName,
+                ContentType = file.ContentType,
+                Size = file.Length,
+                UploadedById = uploadedById,
+                UploadedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.Files.AddAsync(fileEntity);
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("File uploaded successfully: {FileName} -> {FileUrl} (FileId: {FileId})", 
+                file.FileName, fileUrl, fileEntity.Id);
 
             return Ok(new FileUploadResponse
             {
@@ -102,7 +130,7 @@ public class FilesController : ControllerBase
                 return BadRequest(new { message = "File URL is required." });
             }
 
-            var deleted = await _fileStorageService.DeleteFileAsync(fileUrl, cancellationToken);
+            var deleted = await _fileStorageService.DeleteAsync(fileUrl, cancellationToken);
             
             if (deleted)
             {

@@ -1,4 +1,5 @@
 using LMS.Application.Interfaces.Storage;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -22,6 +23,20 @@ public class LocalFileStorageService : IFileStorageService
         {
             Directory.CreateDirectory(_basePath);
         }
+    }
+
+    public async Task<string> UploadAsync(
+        IFormFile file,
+        string? folder = null,
+        CancellationToken cancellationToken = default)
+    {
+        using var fileStream = file.OpenReadStream();
+        return await UploadFileAsync(
+            fileStream,
+            file.FileName,
+            file.ContentType,
+            folder,
+            cancellationToken);
     }
 
     public async Task<string> UploadFileAsync(
@@ -57,6 +72,11 @@ public class LocalFileStorageService : IFileStorageService
             _logger.LogError(ex, "Error uploading file: {FileName}", fileName);
             throw;
         }
+    }
+
+    public async Task<bool> DeleteAsync(string fileUrl, CancellationToken cancellationToken = default)
+    {
+        return await DeleteFileAsync(fileUrl, cancellationToken);
     }
 
     public async Task<bool> DeleteFileAsync(string fileUrl, CancellationToken cancellationToken = default)

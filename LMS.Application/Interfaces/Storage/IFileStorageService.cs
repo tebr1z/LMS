@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace LMS.Application.Interfaces.Storage;
 
 /// <summary>
@@ -5,6 +7,18 @@ namespace LMS.Application.Interfaces.Storage;
 /// </summary>
 public interface IFileStorageService
 {
+    /// <summary>
+    /// Uploads a file from IFormFile and returns the file URL/path
+    /// </summary>
+    /// <param name="file">File to upload</param>
+    /// <param name="folder">Optional folder/path prefix</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>File URL or path</returns>
+    Task<string> UploadAsync(
+        IFormFile file,
+        string? folder = null,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Uploads a file and returns the file URL/path
     /// </summary>
@@ -23,6 +37,14 @@ public interface IFileStorageService
 
     /// <summary>
     /// Deletes a file by its URL/path
+    /// </summary>
+    /// <param name="fileUrl">File URL or path</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>True if deletion was successful</returns>
+    Task<bool> DeleteAsync(string fileUrl, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a file by its URL/path (legacy method name)
     /// </summary>
     /// <param name="fileUrl">File URL or path</param>
     /// <param name="cancellationToken">Cancellation token</param>

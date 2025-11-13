@@ -18,6 +18,7 @@ public class UnitOfWork : IUnitOfWork
     private IGroupUserRepository? _groupUsers;
     private IAssignmentRepository? _assignments;
     private IAssignmentSubmissionRepository? _assignmentSubmissions;
+    private IRepository<Domain.Entities.File>? _files;
 
     public UnitOfWork(LmsDbContext context)
     {
@@ -53,6 +54,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IAssignmentSubmissionRepository AssignmentSubmissions =>
         _assignmentSubmissions ??= new AssignmentSubmissionRepository(_context);
+
+    public IRepository<Domain.Entities.File> Files =>
+        _files ??= new EfRepository<Domain.Entities.File>(_context);
 
     public async Task<int> SaveChangesAsync()
     {

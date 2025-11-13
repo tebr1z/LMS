@@ -12,6 +12,7 @@ public interface IUnitOfWork : IDisposable
     IGroupUserRepository GroupUsers { get; }
     IAssignmentRepository Assignments { get; }
     IAssignmentSubmissionRepository AssignmentSubmissions { get; }
+    IRepository<Domain.Entities.File> Files { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

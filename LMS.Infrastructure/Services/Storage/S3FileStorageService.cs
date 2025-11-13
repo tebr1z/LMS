@@ -1,4 +1,5 @@
 using LMS.Application.Interfaces.Storage;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -30,6 +31,20 @@ public class S3FileStorageService : IFileStorageService
         _region = configuration["FileStorage:S3:Region"] ?? "us-east-1";
         _accessKey = configuration["FileStorage:S3:AccessKey"];
         _secretKey = configuration["FileStorage:S3:SecretKey"];
+    }
+
+    public async Task<string> UploadAsync(
+        IFormFile file,
+        string? folder = null,
+        CancellationToken cancellationToken = default)
+    {
+        using var fileStream = file.OpenReadStream();
+        return await UploadFileAsync(
+            fileStream,
+            file.FileName,
+            file.ContentType,
+            folder,
+            cancellationToken);
     }
 
     public async Task<string> UploadFileAsync(
@@ -104,6 +119,11 @@ public class S3FileStorageService : IFileStorageService
             _logger.LogError(ex, "Error uploading file to S3: {FileName}", fileName);
             throw new InvalidOperationException($"Failed to upload file to S3. Ensure AWS SDK is installed and configured correctly.", ex);
         }
+    }
+
+    public async Task<bool> DeleteAsync(string fileUrl, CancellationToken cancellationToken = default)
+    {
+        return await DeleteFileAsync(fileUrl, cancellationToken);
     }
 
     public async Task<bool> DeleteFileAsync(string fileUrl, CancellationToken cancellationToken = default)

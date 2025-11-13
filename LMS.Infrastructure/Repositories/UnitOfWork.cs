@@ -23,6 +23,8 @@ public class UnitOfWork : IUnitOfWork
     private IQuizSessionRepository? _quizSessions;
     private IRepository<Domain.Entities.QuizQuestion>? _quizQuestions;
     private IRepository<Domain.Entities.QuizResponse>? _quizResponses;
+    private IAttendanceRepository? _attendances;
+    private IStudentNoteRepository? _studentNotes;
 
     public UnitOfWork(LmsDbContext context)
     {
@@ -73,6 +75,12 @@ public class UnitOfWork : IUnitOfWork
 
     public IRepository<Domain.Entities.QuizResponse> QuizResponses =>
         _quizResponses ??= new EfRepository<Domain.Entities.QuizResponse>(_context);
+
+    public IAttendanceRepository Attendances =>
+        _attendances ??= new AttendanceRepository(_context);
+
+    public IStudentNoteRepository StudentNotes =>
+        _studentNotes ??= new StudentNoteRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

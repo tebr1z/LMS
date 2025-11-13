@@ -32,7 +32,11 @@ public class EditAssignmentCommandHandler : IRequestHandler<EditAssignmentComman
             throw new UnauthorizedAccessException("Invalid user performing the action.");
         }
 
-        if (editedByUser.Role == UserRole.Teacher && assignment.CreatedById != request.EditedById)
+        if (editedByUser.Role == UserRole.Mentor)
+        {
+            throw new UnauthorizedAccessException("Mentor cannot edit assignments. Only creator Teacher or Admin can edit assignments.");
+        }
+        else if (editedByUser.Role == UserRole.Teacher && assignment.CreatedById != request.EditedById)
         {
             throw new UnauthorizedAccessException("Only the creator Teacher or Admin can edit assignments.");
         }

@@ -17,6 +17,8 @@ public interface IUnitOfWork : IDisposable
     IQuizSessionRepository QuizSessions { get; }
     IRepository<Domain.Entities.QuizQuestion> QuizQuestions { get; }
     IRepository<Domain.Entities.QuizResponse> QuizResponses { get; }
+    IAttendanceRepository Attendances { get; }
+    IStudentNoteRepository StudentNotes { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

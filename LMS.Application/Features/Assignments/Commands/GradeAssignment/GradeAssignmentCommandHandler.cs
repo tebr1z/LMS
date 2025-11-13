@@ -38,7 +38,11 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
             throw new UnauthorizedAccessException("Invalid user performing the action.");
         }
 
-        if (evaluator.Role != UserRole.Teacher && evaluator.Role != UserRole.MasterAdmin && evaluator.Role != UserRole.Admin)
+        if (evaluator.Role == UserRole.Mentor)
+        {
+            throw new UnauthorizedAccessException("Mentor cannot grade assignments. Only Teacher or Admin can grade assignments.");
+        }
+        else if (evaluator.Role != UserRole.Teacher && evaluator.Role != UserRole.MasterAdmin && evaluator.Role != UserRole.Admin)
         {
             throw new UnauthorizedAccessException("Only Teacher or Admin can grade assignments.");
         }

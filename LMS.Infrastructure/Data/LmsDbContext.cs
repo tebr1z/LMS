@@ -30,6 +30,8 @@ public class LmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<QuizQuestion> QuizQuestions { get; set; } = null!;
     public DbSet<QuizResponse> QuizResponses { get; set; } = null!;
     public DbSet<QuizSession> QuizSessions { get; set; } = null!;
+    public DbSet<Attendance> Attendances { get; set; } = null!;
+    public DbSet<StudentNote> StudentNotes { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -41,6 +41,10 @@ public class CreateAssignmentCommandHandler : IRequestHandler<CreateAssignmentCo
                 throw new UnauthorizedAccessException("Teacher must be assigned to the CourseInstance/Group to create assignments.");
             }
         }
+        else if (createdByUser.Role == UserRole.Mentor)
+        {
+            throw new UnauthorizedAccessException("Mentor cannot create assignments. Only Teacher (assigned to CourseInstance/Group) or Admin can create assignments.");
+        }
         else if (createdByUser.Role != UserRole.MasterAdmin && createdByUser.Role != UserRole.Admin)
         {
             throw new UnauthorizedAccessException("Only Teacher (assigned to CourseInstance/Group) or Admin can create assignments.");

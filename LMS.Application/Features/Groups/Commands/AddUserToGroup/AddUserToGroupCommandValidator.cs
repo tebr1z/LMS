@@ -13,8 +13,7 @@ public class AddUserToGroupCommandValidator : AbstractValidator<AddUserToGroupCo
             .GreaterThan(0).WithMessage("UserId must be a valid user ID.");
 
         RuleFor(x => x.Role)
-            .NotEmpty().WithMessage("Role is required.")
-            .MaximumLength(50).WithMessage("Role must not exceed 50 characters.");
+            .IsInEnum().WithMessage("Role must be a valid GroupRole value.");
 
         RuleFor(x => x.AddedBy)
             .GreaterThan(0).WithMessage("AddedBy must be a valid user ID.");

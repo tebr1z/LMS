@@ -28,7 +28,7 @@ public class GroupsController : ControllerBase
     /// Create a new group (Only MasterAdmin or Admin)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "MasterAdmin,Admin")]
+    [Authorize(Policy = "Admin")]
     public async Task<ActionResult<int>> CreateGroup([FromBody] CreateGroupCommand command, CancellationToken cancellationToken)
     {
         try
@@ -40,9 +40,14 @@ public class GroupsController : ControllerBase
                 return Unauthorized(new { message = "Invalid user token." });
             }
 
-            command.CreatedBy = userId;
+            command.CreatedById = userId;
             var result = await _mediator.Send(command, cancellationToken);
             return CreatedAtAction(nameof(GetGroupDetails), new { id = result }, result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized attempt to create group");
+            return Forbid(ex.Message);
         }
         catch (Exception ex)
         {
@@ -55,7 +60,7 @@ public class GroupsController : ControllerBase
     /// Add a user to a group (MasterAdmin, Admin, or assigned Teacher)
     /// </summary>
     [HttpPost("{groupId}/add-user")]
-    [Authorize(Roles = "MasterAdmin,Admin,Teacher")]
+    [Authorize(Policy = "Teacher")]
     public async Task<ActionResult<int>> AddUserToGroup(
         int groupId,
         [FromBody] AddUserToGroupRequest request,
@@ -70,11 +75,17 @@ public class GroupsController : ControllerBase
                 return Unauthorized(new { message = "Invalid user token." });
             }
 
+            // Parse GroupRole from string
+            if (!System.Enum.TryParse<LMS.Domain.Enums.GroupRole>(request.Role ?? "Student", out var groupRole))
+            {
+                return BadRequest(new { message = "Invalid role. Valid roles: Teacher, Mentor, Student, StudentOffice, Finance" });
+            }
+
             var command = new AddUserToGroupCommand
             {
                 GroupId = groupId,
                 UserId = request.UserId,
-                Role = request.Role ?? "Member",
+                Role = groupRole,
                 AddedBy = addedBy
             };
 
@@ -99,10 +110,11 @@ public class GroupsController : ControllerBase
     }
 
     /// <summary>
-    /// Add a course to a group (MasterAdmin, Admin, or assigned Teacher)
+    /// Add a course template (CoursePrepared) to a group (Only MasterAdmin or Admin)
+    /// When added, creates a Course instance for that Group with copy of DefaultContent
     /// </summary>
     [HttpPost("{groupId}/add-course")]
-    [Authorize(Roles = "MasterAdmin,Admin,Teacher")]
+    [Authorize(Policy = "Admin")]
     public async Task<ActionResult<int>> AddCourseToGroup(
         int groupId,
         [FromBody] AddCourseToGroupRequest request,
@@ -120,12 +132,12 @@ public class GroupsController : ControllerBase
             var command = new AddCourseToGroupCommand
             {
                 GroupId = groupId,
-                CourseId = request.CourseId,
+                CoursePreparedId = request.CoursePreparedId,
                 AddedBy = addedBy
             };
 
             var result = await _mediator.Send(command, cancellationToken);
-            return Ok(new { courseGroupId = result, message = "Course added to group successfully." });
+            return Ok(new { courseGroupId = result, message = "Course template added to group successfully. Course instance created." });
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -145,10 +157,10 @@ public class GroupsController : ControllerBase
     }
 
     /// <summary>
-    /// Get group details by ID
+    /// Get group details by ID (returns group details, courses in group, users with roles)
     /// </summary>
     [HttpGet("{id}")]
-    [Authorize(Roles = "Student,Teacher,Admin,MasterAdmin,Mentor")]
+    [Authorize(Policy = "Student")]
     public async Task<ActionResult> GetGroupDetails(int id, CancellationToken cancellationToken)
     {
         try
@@ -190,11 +202,11 @@ public class GroupsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all groups by course ID
+    /// Get all groups by CoursePrepared ID
     /// </summary>
-    [HttpGet("by-course/{courseId}")]
-    [Authorize(Roles = "Student,Teacher,Admin,MasterAdmin,Mentor")]
-    public async Task<ActionResult> GetGroupsByCourse(int courseId, CancellationToken cancellationToken)
+    [HttpGet("by-course/{coursePreparedId}")]
+    [Authorize(Policy = "Student")]
+    public async Task<ActionResult> GetGroupsByCourse(int coursePreparedId, CancellationToken cancellationToken)
     {
         try
         {
@@ -210,7 +222,7 @@ public class GroupsController : ControllerBase
 
             var query = new GetGroupsByCourseQuery 
             { 
-                CourseId = courseId,
+                CoursePreparedId = coursePreparedId,
                 UserId = userId,
                 UserRole = userRoleClaim ?? string.Empty
             };
@@ -219,7 +231,7 @@ public class GroupsController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Course not found");
+            _logger.LogWarning(ex, "CoursePrepared not found");
             return NotFound(new { message = ex.Message });
         }
         catch (Exception ex)
@@ -234,11 +246,11 @@ public class GroupsController : ControllerBase
 public class AddUserToGroupRequest
 {
     public int UserId { get; set; }
-    public string? Role { get; set; }
+    public string? Role { get; set; } // GroupRole enum: Teacher, Mentor, Student, StudentOffice, Finance
 }
 
 public class AddCourseToGroupRequest
 {
-    public int CourseId { get; set; }
+    public int CoursePreparedId { get; set; }
 }
 

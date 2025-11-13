@@ -107,16 +107,16 @@ builder.Services.AddAuthentication(options =>
 // Configure Authorization with role-based policies
 builder.Services.AddAuthorization(options =>
 {
-    // Define role-based policies
+    // Define role-based policies with hierarchical access
+    // RequireRole allows access if user has any of the specified roles
     options.AddPolicy("MasterAdmin", policy => policy.RequireRole("MasterAdmin"));
-    options.AddPolicy("Admin", policy => policy.RequireRole("MasterAdmin", "Admin"));
-    options.AddPolicy("Teacher", policy => policy.RequireRole("MasterAdmin", "Admin", "Teacher"));
-    options.AddPolicy("Student", policy => policy.RequireRole("MasterAdmin", "Admin", "Teacher", "Student"));
-    options.AddPolicy("Mentor", policy => policy.RequireRole("MasterAdmin", "Admin", "Teacher", "Mentor"));
-    options.AddPolicy("StudentOffice", policy => policy.RequireRole("MasterAdmin", "Admin", "StudentOffice"));
-    options.AddPolicy("Finance", policy => policy.RequireRole("MasterAdmin", "Admin", "Finance"));
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin", "MasterAdmin"));
+    options.AddPolicy("Teacher", policy => policy.RequireRole("Teacher", "Admin", "MasterAdmin"));
+    options.AddPolicy("Mentor", policy => policy.RequireRole("Mentor", "Teacher", "Admin", "MasterAdmin")); // Note: Mentor will have read-only in business logic
+    options.AddPolicy("Student", policy => policy.RequireRole("Student", "StudentOffice", "Mentor", "Teacher", "Admin", "MasterAdmin"));
+    options.AddPolicy("Finance", policy => policy.RequireRole("Finance", "Admin", "MasterAdmin"));
     
-    // Combined policies
+    // Combined policies (optional, for convenience)
     options.AddPolicy("AdminOrTeacher", policy => policy.RequireRole("MasterAdmin", "Admin", "Teacher"));
     options.AddPolicy("AdminOrStudentOffice", policy => policy.RequireRole("MasterAdmin", "Admin", "StudentOffice"));
     options.AddPolicy("AdminOrFinance", policy => policy.RequireRole("MasterAdmin", "Admin", "Finance"));

@@ -9,6 +9,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly LmsDbContext _context;
     private IDbContextTransaction? _transaction;
     private ICourseRepository? _courses;
+    private ICoursePreparedRepository? _coursePrepareds;
     private IEnrollmentRepository? _enrollments;
     private IMessageRepository? _messages;
     private IGroupRepository? _groups;
@@ -24,6 +25,9 @@ public class UnitOfWork : IUnitOfWork
 
     public ICourseRepository Courses =>
         _courses ??= new CourseRepository(_context);
+
+    public ICoursePreparedRepository CoursePrepareds =>
+        _coursePrepareds ??= new CoursePreparedRepository(_context);
 
     public IEnrollmentRepository Enrollments =>
         _enrollments ??= new EnrollmentRepository(_context);

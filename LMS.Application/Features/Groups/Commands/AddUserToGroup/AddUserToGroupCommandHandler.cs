@@ -46,13 +46,19 @@ public class AddUserToGroupCommandHandler : IRequestHandler<AddUserToGroupComman
             throw new UnauthorizedAccessException("Invalid user performing the action.");
         }
 
-        // Check if user is Teacher and if they are assigned to this group
+        // Business rule: Teacher can add Student/Mentor only to groups they belong to
         if (addedByUser.Role == UserRole.Teacher)
         {
             var isTeacherInGroup = await _unitOfWork.GroupUsers.IsUserAssignedToGroupAsync(request.GroupId, request.AddedBy);
             if (!isTeacherInGroup)
             {
                 throw new UnauthorizedAccessException("Teacher must be assigned to the group to add users.");
+            }
+
+            // Teacher can only add Student or Mentor roles
+            if (request.Role != GroupRole.Student && request.Role != GroupRole.Mentor)
+            {
+                throw new UnauthorizedAccessException("Teachers can only add Students or Mentors to groups.");
             }
         }
         else if (addedByUser.Role != UserRole.MasterAdmin && addedByUser.Role != UserRole.Admin)

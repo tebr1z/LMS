@@ -15,22 +15,23 @@ public class CourseGroupRepository : EfRepository<CourseGroup>, ICourseGroupRepo
     {
         return await _dbSet
             .Where(cg => cg.GroupId == groupId)
-            .Include(cg => cg.Course)
+            .Include(cg => cg.CoursePrepared)
             .ToListAsync();
     }
 
-    public async Task<List<CourseGroup>> GetCourseGroupsByCourseIdAsync(int courseId)
+    public async Task<List<CourseGroup>> GetCourseGroupsByCourseIdAsync(int coursePreparedId)
     {
         return await _dbSet
-            .Where(cg => cg.CourseId == courseId)
+            .Where(cg => cg.CoursePreparedId == coursePreparedId)
             .Include(cg => cg.Group)
+            .Include(cg => cg.CoursePrepared)
             .ToListAsync();
     }
 
-    public async Task<CourseGroup?> GetByGroupAndCourseAsync(int groupId, int courseId)
+    public async Task<CourseGroup?> GetByGroupAndCourseAsync(int groupId, int coursePreparedId)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(cg => cg.GroupId == groupId && cg.CourseId == courseId);
+            .FirstOrDefaultAsync(cg => cg.GroupId == groupId && cg.CoursePreparedId == coursePreparedId);
     }
 }
 

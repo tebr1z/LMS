@@ -3,6 +3,7 @@ namespace LMS.Application.Interfaces;
 public interface IUnitOfWork : IDisposable
 {
     ICourseRepository Courses { get; }
+    ICoursePreparedRepository CoursePrepareds { get; }
     IEnrollmentRepository Enrollments { get; }
     IMessageRepository Messages { get; }
     IGroupRepository Groups { get; }

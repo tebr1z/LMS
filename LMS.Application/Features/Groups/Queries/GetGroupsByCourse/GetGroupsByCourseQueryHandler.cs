@@ -21,16 +21,16 @@ public class GetGroupsByCourseQueryHandler : IRequestHandler<GetGroupsByCourseQu
 
     public async Task<IEnumerable<GroupDto>> Handle(GetGroupsByCourseQuery request, CancellationToken cancellationToken)
     {
-        // Check if course exists
-        var course = await _unitOfWork.Courses.GetByIdAsync(request.CourseId);
-        if (course == null)
+        // Check if CoursePrepared exists
+        var coursePrepared = await _unitOfWork.CoursePrepareds.GetByIdAsync(request.CoursePreparedId);
+        if (coursePrepared == null)
         {
-            throw new InvalidOperationException($"Course with ID {request.CourseId} not found.");
+            throw new InvalidOperationException($"CoursePrepared with ID {request.CoursePreparedId} not found.");
         }
 
         // Get groups based on role
         List<Group> groups;
-        var allGroupsForCourse = await _unitOfWork.Groups.GetGroupsByCourseIdAsync(request.CourseId);
+        var allGroupsForCourse = await _unitOfWork.Groups.GetGroupsByCourseIdAsync(request.CoursePreparedId);
 
         // Filter groups based on user role
         if (request.UserRole == "MasterAdmin" || request.UserRole == "Mentor")
@@ -41,7 +41,7 @@ public class GetGroupsByCourseQueryHandler : IRequestHandler<GetGroupsByCourseQu
         else if (request.UserRole == "Admin")
         {
             // Admin sees groups they created
-            groups = allGroupsForCourse.Where(g => g.CreatedBy == request.UserId).ToList();
+            groups = allGroupsForCourse.Where(g => g.CreatedById == request.UserId).ToList();
         }
         else if (request.UserRole == "Teacher")
         {
@@ -64,22 +64,22 @@ public class GetGroupsByCourseQueryHandler : IRequestHandler<GetGroupsByCourseQu
         {
             var groupDto = _mapper.Map<GroupDto>(group);
 
-            // Map courses
+            // Map courses (CoursePrepared linked to this group)
             foreach (var courseGroup in group.CourseGroups)
             {
-                var courseEntity = await _unitOfWork.Courses.GetByIdAsync(courseGroup.CourseId);
-                if (courseEntity != null)
+                var coursePreparedEntity = await _unitOfWork.CoursePrepareds.GetByIdAsync(courseGroup.CoursePreparedId);
+                if (coursePreparedEntity != null)
                 {
                     groupDto.Courses.Add(new CourseGroupDto
                     {
                         Id = courseGroup.Id,
-                        CourseId = courseEntity.Id,
-                        CourseTitle = courseEntity.Title
+                        CourseId = coursePreparedEntity.Id,
+                        CourseTitle = coursePreparedEntity.Title
                     });
                 }
             }
 
-            // Map users
+            // Map users with their roles
             foreach (var groupUser in group.GroupUsers)
             {
                 var userName = await _userRepository.GetUserFullNameAsync(groupUser.UserId);
@@ -88,7 +88,7 @@ public class GetGroupsByCourseQueryHandler : IRequestHandler<GetGroupsByCourseQu
                     Id = groupUser.Id,
                     UserId = groupUser.UserId,
                     UserName = userName ?? "Unknown",
-                    Role = groupUser.Role
+                    Role = groupUser.Role.ToString()
                 });
             }
 

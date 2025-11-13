@@ -9,8 +9,8 @@ public class AddCourseToGroupCommandValidator : AbstractValidator<AddCourseToGro
         RuleFor(x => x.GroupId)
             .GreaterThan(0).WithMessage("GroupId must be a valid group ID.");
 
-        RuleFor(x => x.CourseId)
-            .GreaterThan(0).WithMessage("CourseId must be a valid course ID.");
+        RuleFor(x => x.CoursePreparedId)
+            .GreaterThan(0).WithMessage("CoursePreparedId must be a valid course prepared ID.");
 
         RuleFor(x => x.AddedBy)
             .GreaterThan(0).WithMessage("AddedBy must be a valid user ID.");

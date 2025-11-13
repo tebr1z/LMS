@@ -32,7 +32,7 @@ public class GetGroupDetailsQueryHandler : IRequestHandler<GetGroupDetailsQuery,
             if (request.UserRole == "Admin")
             {
                 // Admin can only see groups they created
-                if (group.CreatedBy != request.UserId)
+                if (group.CreatedById != request.UserId)
                 {
                     throw new UnauthorizedAccessException("You do not have access to this group.");
                 }
@@ -53,22 +53,22 @@ public class GetGroupDetailsQueryHandler : IRequestHandler<GetGroupDetailsQuery,
 
         var groupDto = _mapper.Map<GroupDto>(group);
 
-        // Map courses
+        // Map courses (CoursePrepared linked to this group)
         foreach (var courseGroup in group.CourseGroups)
         {
-            var course = await _unitOfWork.Courses.GetByIdAsync(courseGroup.CourseId);
-            if (course != null)
+            var coursePrepared = await _unitOfWork.CoursePrepareds.GetByIdAsync(courseGroup.CoursePreparedId);
+            if (coursePrepared != null)
             {
                 groupDto.Courses.Add(new CourseGroupDto
                 {
                     Id = courseGroup.Id,
-                    CourseId = course.Id,
-                    CourseTitle = course.Title
+                    CourseId = coursePrepared.Id,
+                    CourseTitle = coursePrepared.Title
                 });
             }
         }
 
-        // Map users
+        // Map users with their roles
         foreach (var groupUser in group.GroupUsers)
         {
             var userName = await _userRepository.GetUserFullNameAsync(groupUser.UserId);
@@ -77,7 +77,7 @@ public class GetGroupDetailsQueryHandler : IRequestHandler<GetGroupDetailsQuery,
                 Id = groupUser.Id,
                 UserId = groupUser.UserId,
                 UserName = userName ?? "Unknown",
-                Role = groupUser.Role
+                Role = groupUser.Role.ToString()
             });
         }
 

@@ -23,16 +23,17 @@ public class GroupRepository : EfRepository<Group>, IGroupRepository
     {
         return await _dbSet
             .Include(g => g.CourseGroups)
-                .ThenInclude(cg => cg.Course)
+                .ThenInclude(cg => cg.CoursePrepared)
             .Include(g => g.GroupUsers)
             .FirstOrDefaultAsync(g => g.Id == groupId);
     }
 
-    public async Task<List<Group>> GetGroupsByCourseIdAsync(int courseId)
+    public async Task<List<Group>> GetGroupsByCourseIdAsync(int coursePreparedId)
     {
         return await _dbSet
-            .Where(g => g.CourseGroups.Any(cg => cg.CourseId == courseId))
+            .Where(g => g.CourseGroups.Any(cg => cg.CoursePreparedId == coursePreparedId))
             .Include(g => g.CourseGroups)
+                .ThenInclude(cg => cg.CoursePrepared)
             .Include(g => g.GroupUsers)
             .ToListAsync();
     }
@@ -43,10 +44,10 @@ public class GroupRepository : EfRepository<Group>, IGroupRepository
             .AnyAsync(g => g.Id == groupId && g.GroupUsers.Any(gu => gu.UserId == userId));
     }
 
-    public async Task<bool> IsCourseInGroupAsync(int groupId, int courseId)
+    public async Task<bool> IsCourseInGroupAsync(int groupId, int coursePreparedId)
     {
         return await _dbSet
-            .AnyAsync(g => g.Id == groupId && g.CourseGroups.Any(cg => cg.CourseId == courseId));
+            .AnyAsync(g => g.Id == groupId && g.CourseGroups.Any(cg => cg.CoursePreparedId == coursePreparedId));
     }
 
     public async Task<List<Group>> GetGroupsForUserAsync(int userId, string userRole)

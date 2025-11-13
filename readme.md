@@ -1,4 +1,4 @@
-# 🌐 vexirahost.com
+# 🌐 www.vexirahost.com
 
 ## 🎓 LMS (Learning Management System) nədir?
 

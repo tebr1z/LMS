@@ -25,45 +25,54 @@ public class AddCourseToGroupCommandHandler : IRequestHandler<AddCourseToGroupCo
             throw new InvalidOperationException($"Group with ID {request.GroupId} not found.");
         }
 
-        // Check if course exists
-        var course = await _unitOfWork.Courses.GetByIdAsync(request.CourseId);
-        if (course == null)
+        // Check if CoursePrepared exists
+        var coursePrepared = await _unitOfWork.CoursePrepareds.GetByIdAsync(request.CoursePreparedId);
+        if (coursePrepared == null)
         {
-            throw new InvalidOperationException($"Course with ID {request.CourseId} not found.");
+            throw new InvalidOperationException($"CoursePrepared with ID {request.CoursePreparedId} not found.");
         }
 
-        // Check if course is already in the group
-        var existingCourseGroup = await _unitOfWork.CourseGroups.GetByGroupAndCourseAsync(request.GroupId, request.CourseId);
+        // Check if CoursePrepared is already in the group
+        var existingCourseGroup = await _unitOfWork.CourseGroups.GetByGroupAndCourseAsync(request.GroupId, request.CoursePreparedId);
         if (existingCourseGroup != null)
         {
-            throw new InvalidOperationException($"Course {request.CourseId} is already in group {request.GroupId}.");
+            throw new InvalidOperationException($"CoursePrepared {request.CoursePreparedId} is already in group {request.GroupId}.");
         }
 
-        // Authorization check: Only MasterAdmin, Admin, or Teacher (if assigned to group) can add courses
+        // Authorization check: Only MasterAdmin or Admin can add courses to groups
         var addedByUser = await _userRepository.GetUserByIdAsync(request.AddedBy);
         if (addedByUser == null)
         {
             throw new UnauthorizedAccessException("Invalid user performing the action.");
         }
 
-        // Check if user is Teacher and if they are assigned to this group
-        if (addedByUser.Role == UserRole.Teacher)
+        if (addedByUser.Role != UserRole.MasterAdmin && addedByUser.Role != UserRole.Admin)
         {
-            var isTeacherInGroup = await _unitOfWork.GroupUsers.IsUserAssignedToGroupAsync(request.GroupId, request.AddedBy);
-            if (!isTeacherInGroup)
-            {
-                throw new UnauthorizedAccessException("Teacher must be assigned to the group to add courses.");
-            }
-        }
-        else if (addedByUser.Role != UserRole.MasterAdmin && addedByUser.Role != UserRole.Admin)
-        {
-            throw new UnauthorizedAccessException("Only MasterAdmin, Admin, or assigned Teacher can add courses to groups.");
+            throw new UnauthorizedAccessException("Only MasterAdmin or Admin can add courses to groups.");
         }
 
+        // When CoursePrepared is added to Group, create a Course instance (CourseTaken) with copy of DefaultContent
+        var courseTaken = new Course
+        {
+            Title = coursePrepared.Title,
+            Description = coursePrepared.Description,
+            CreatedBy = request.AddedBy,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Note: Course entity doesn't have a Content field, but if it had, we would copy:
+        // courseTaken.Content = coursePrepared.DefaultContent;
+        // Assignments remain separate (they stay with CoursePrepared)
+
+        // Add CourseTaken to database
+        await _unitOfWork.Courses.AddAsync(courseTaken);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Create CourseGroup link between Group and CoursePrepared
         var courseGroup = new CourseGroup
         {
             GroupId = request.GroupId,
-            CourseId = request.CourseId,
+            CoursePreparedId = request.CoursePreparedId,
             CreatedAt = DateTime.UtcNow
         };
 

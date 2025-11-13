@@ -42,3 +42,4 @@ public class RedeemableItemConfiguration : IEntityTypeConfiguration<RedeemableIt
     }
 }
 
+

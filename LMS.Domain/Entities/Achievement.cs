@@ -15,3 +15,4 @@ public class Achievement : BaseEntity
     public virtual ICollection<UserAchievement> UserAchievements { get; set; } = new List<UserAchievement>();
 }
 
+

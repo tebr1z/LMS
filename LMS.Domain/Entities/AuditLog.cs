@@ -15,3 +15,4 @@ public class AuditLog : BaseEntity
     public string? Description { get; set; } // Optional description of the change
 }
 
+

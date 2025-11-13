@@ -8,3 +8,4 @@ public interface IRewardPointRepository : IRepository<RewardPoint>
     Task<int> GetTotalPointsAsync(int userId, CancellationToken cancellationToken = default);
 }
 
+

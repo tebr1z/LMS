@@ -7,3 +7,4 @@ public interface IAchievementRepository : IRepository<Achievement>
     Task<List<Achievement>> GetActiveAchievementsAsync(CancellationToken cancellationToken = default);
 }
 
+

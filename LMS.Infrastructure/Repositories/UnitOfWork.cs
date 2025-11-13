@@ -39,6 +39,9 @@ public class UnitOfWork : IUnitOfWork
     private IUserAchievementRepository? _userAchievements;
     private IRewardPointRepository? _rewardPoints;
     private IRedeemableItemRepository? _redeemableItems;
+    private IAssignmentFeedbackAIRepository? _assignmentFeedbackAI;
+    private ILiveSessionRepository? _liveSessions;
+    private ICourseLocalizedRepository? _courseLocalized;
 
     public UnitOfWork(LmsDbContext context)
     {
@@ -137,6 +140,15 @@ public class UnitOfWork : IUnitOfWork
 
     public IRedeemableItemRepository RedeemableItems =>
         _redeemableItems ??= new RedeemableItemRepository(_context);
+
+    public IAssignmentFeedbackAIRepository AssignmentFeedbackAI =>
+        _assignmentFeedbackAI ??= new AssignmentFeedbackAIRepository(_context);
+
+    public ILiveSessionRepository LiveSessions =>
+        _liveSessions ??= new LiveSessionRepository(_context);
+
+    public ICourseLocalizedRepository CourseLocalized =>
+        _courseLocalized ??= new CourseLocalizedRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

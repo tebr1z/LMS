@@ -46,6 +46,9 @@ public class LmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<UserAchievement> UserAchievements { get; set; } = null!;
     public DbSet<RewardPoint> RewardPoints { get; set; } = null!;
     public DbSet<RedeemableItem> RedeemableItems { get; set; } = null!;
+    public DbSet<AssignmentFeedbackAI> AssignmentFeedbackAI { get; set; } = null!;
+    public DbSet<LiveSession> LiveSessions { get; set; } = null!;
+    public DbSet<CourseLocalized> CourseLocalized { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

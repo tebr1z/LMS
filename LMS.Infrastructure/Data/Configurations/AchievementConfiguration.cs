@@ -34,3 +34,4 @@ public class AchievementConfiguration : IEntityTypeConfiguration<Achievement>
     }
 }
 
+

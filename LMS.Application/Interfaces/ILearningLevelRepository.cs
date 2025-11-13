@@ -18,3 +18,4 @@ public interface ILearningLevelRepository : IRepository<LearningLevel>
     Task<LearningLevel> GetOrCreateAsync(int studentId, CancellationToken cancellationToken = default);
 }
 
+

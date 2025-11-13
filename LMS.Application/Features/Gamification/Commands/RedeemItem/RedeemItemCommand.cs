@@ -15,3 +15,4 @@ public class RedeemItemResultDto
     public int RemainingPoints { get; set; }
 }
 
+

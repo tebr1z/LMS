@@ -29,3 +29,4 @@ public class SystemStatsDto
     public Dictionary<string, int> UsersByRole { get; set; } = new();
 }
 
+

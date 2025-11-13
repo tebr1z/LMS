@@ -32,3 +32,4 @@ public interface IAuditLogRepository : IRepository<AuditLog>
     Task<List<AuditLog>> GetAuditLogsByUserAsync(int userId, CancellationToken cancellationToken = default);
 }
 
+

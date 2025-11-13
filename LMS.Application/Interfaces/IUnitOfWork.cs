@@ -33,6 +33,9 @@ public interface IUnitOfWork : IDisposable
     IUserAchievementRepository UserAchievements { get; }
     IRewardPointRepository RewardPoints { get; }
     IRedeemableItemRepository RedeemableItems { get; }
+    IAssignmentFeedbackAIRepository AssignmentFeedbackAI { get; }
+    ILiveSessionRepository LiveSessions { get; }
+    ICourseLocalizedRepository CourseLocalized { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

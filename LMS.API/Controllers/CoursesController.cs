@@ -1,5 +1,7 @@
 using LMS.Application.Features.Courses.Commands.CreateCourse;
+using LMS.Application.Features.Courses.Commands.TranslateCourse;
 using LMS.Application.Features.Courses.Queries.GetAllCourses;
+using LMS.Application.Features.Courses.Queries.GetCourseById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -54,12 +56,103 @@ public class CoursesController : ControllerBase
         try
         {
             var result = await _mediator.Send(command, cancellationToken);
-            return CreatedAtAction(nameof(GetAllCourses), new { id = result }, result);
+            return CreatedAtAction(nameof(GetCourseById), new { id = result }, result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, _localizer["ErrorCreatingCourse"]);
             return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Get course by ID with optional language localization
+    /// </summary>
+    /// <param name="courseId">Course ID</param>
+    /// <param name="lang">Optional language code (e.g., "tr", "ru", "az", "en"). If not provided, returns original/default version.</param>
+    [HttpGet("{courseId}")]
+    [Authorize(Roles = "Student,Teacher,Admin,MasterAdmin,Mentor")]
+    [ProducesResponseType(typeof(CourseLocalizedDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<CourseLocalizedDto>> GetCourseById(
+        int courseId,
+        [FromQuery] string? lang = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = new GetCourseByIdQuery
+            {
+                CourseId = courseId,
+                LangCode = lang
+            };
+
+            var result = await _mediator.Send(query, cancellationToken);
+
+            if (result == null)
+            {
+                return NotFound(new { message = $"Course with ID {courseId} not found." });
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving course {CourseId}", courseId);
+            return StatusCode(500, new { message = "An error occurred while retrieving the course.", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Translate a course to a specific language
+    /// </summary>
+    /// <param name="courseId">Course ID</param>
+    /// <param name="lang">Target language code (e.g., "tr", "ru", "az")</param>
+    [HttpPost("translate/{courseId}")]
+    [Authorize(Roles = "Teacher,Admin,MasterAdmin")]
+    [ProducesResponseType(typeof(TranslateCourseResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<TranslateCourseResponse>> TranslateCourse(
+        int courseId,
+        [FromQuery] string lang,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(lang))
+            {
+                return BadRequest(new { message = "Language code (lang) parameter is required." });
+            }
+
+            var command = new TranslateCourseCommand
+            {
+                CourseId = courseId,
+                LangCode = lang
+            };
+
+            var result = await _mediator.Send(command, cancellationToken);
+
+            if (!result.Success)
+            {
+                if (result.ErrorMessage?.Contains("not found") == true)
+                {
+                    return NotFound(new { message = result.ErrorMessage });
+                }
+                return BadRequest(new { message = result.Message, error = result.ErrorMessage });
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error translating course {CourseId} to language {Lang}", courseId, lang);
+            return StatusCode(500, new { message = "An error occurred during translation.", error = ex.Message });
         }
     }
 }

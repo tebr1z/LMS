@@ -11,6 +11,8 @@ using LMS.Infrastructure.Services.Payments;
 using LMS.Infrastructure.Services.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace LMS.Infrastructure;
 
@@ -24,7 +26,33 @@ public static class DependencyInjection
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAdaptiveLearningService, AdaptiveLearningService>();
         services.AddScoped<IAchievementEngine, AchievementEngine>();
+        services.AddScoped<ILiveSessionService>(sp =>
+        {
+            var unitOfWork = sp.GetRequiredService<IUnitOfWork>();
+            var userRepository = sp.GetRequiredService<IUserRepository>();
+            var config = sp.GetRequiredService<IConfiguration>();
+            var logger = sp.GetRequiredService<ILogger<LiveSessionService>>();
+            var notificationService = sp.GetService<INotificationService>(); // Optional
+            return new LiveSessionService(unitOfWork, userRepository, config, logger, notificationService);
+        });
         services.AddScoped<LMS.Application.Services.ISettingsService, LMS.Application.Services.SettingsService>();
+
+        // Register HttpClient for OpenAI API and AI Feedback Service
+        // AddHttpClient automatically registers the service as scoped
+        services.AddHttpClient<IAIFeedbackService, AIFeedbackService>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.openai.com/v1/");
+            var apiKey = configuration["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI ApiKey is not configured");
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+        });
+
+        // Register HttpClient for OpenAI API and Translation Service
+        services.AddHttpClient<ITranslationService, TranslationService>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.openai.com/v1/");
+            var apiKey = configuration["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI ApiKey is not configured");
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+        });
 
         // Register File Storage Service
         var storageProvider = configuration["FileStorage:Provider"] ?? "Local";

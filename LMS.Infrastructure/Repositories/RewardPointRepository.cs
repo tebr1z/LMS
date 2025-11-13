@@ -27,3 +27,4 @@ public class RewardPointRepository : EfRepository<RewardPoint>, IRewardPointRepo
     }
 }
 
+

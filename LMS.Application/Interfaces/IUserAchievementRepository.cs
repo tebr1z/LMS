@@ -9,3 +9,4 @@ public interface IUserAchievementRepository : IRepository<UserAchievement>
     Task<UserAchievement?> GetByUserAndAchievementAsync(int userId, int achievementId, CancellationToken cancellationToken = default);
 }
 
+

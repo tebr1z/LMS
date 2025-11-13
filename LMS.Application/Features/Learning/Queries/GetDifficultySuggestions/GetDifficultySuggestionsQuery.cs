@@ -18,3 +18,4 @@ public class DifficultySuggestionDto
     public string RecommendedDifficultyName { get; set; } = string.Empty; // Easy, Medium, Hard
 }
 
+

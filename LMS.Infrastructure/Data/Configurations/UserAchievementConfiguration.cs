@@ -41,3 +41,4 @@ public class UserAchievementConfiguration : IEntityTypeConfiguration<UserAchieve
     }
 }
 
+

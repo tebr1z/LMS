@@ -12,7 +12,7 @@ public class ChatHub : Hub
 {
     private readonly IMediator _mediator;
     private readonly IUnitOfWork _unitOfWork;
-    private static readonly Dictionary<int, string> _userConnections = new();
+    private static readonly Dictionary<int, HashSet<string>> _userConnections = new(); // Multiple connections per user
 
     public ChatHub(IMediator mediator, IUnitOfWork unitOfWork)
     {
@@ -22,29 +22,36 @@ public class ChatHub : Hub
 
     public override async Task OnConnectedAsync()
     {
+        // Authenticate via JWT in query string or header and record connection id -> map to user
         var userId = GetUserId();
         if (userId.HasValue)
         {
-            _userConnections[userId.Value] = Context.ConnectionId;
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"user_{userId.Value}");
-            
-            // Add user to SignalR groups for all groups they belong to
-            await JoinUserGroupsAsync(userId.Value);
+            // Track connection id -> map to user
+            if (!_userConnections.ContainsKey(userId.Value))
+            {
+                _userConnections[userId.Value] = new HashSet<string>();
+            }
+            _userConnections[userId.Value].Add(Context.ConnectionId);
         }
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        // Remove connection mapping
         var userId = GetUserId();
-        if (userId.HasValue)
+        if (userId.HasValue && _userConnections.ContainsKey(userId.Value))
         {
-            _userConnections.Remove(userId.Value);
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user_{userId.Value}");
+            _userConnections[userId.Value].Remove(Context.ConnectionId);
+            if (_userConnections[userId.Value].Count == 0)
+            {
+                _userConnections.Remove(userId.Value);
+            }
         }
         await base.OnDisconnectedAsync(exception);
     }
 
+    // Private message support (optional)
     public async Task SendMessage(int receiverId, string text)
     {
         var senderId = GetUserId();
@@ -64,17 +71,19 @@ public class ChatHub : Hub
         var messageId = await _mediator.Send(command);
 
         // Broadcast to receiver via SignalR
-        var receiverConnectionId = _userConnections.GetValueOrDefault(receiverId);
-        if (!string.IsNullOrEmpty(receiverConnectionId))
+        if (_userConnections.ContainsKey(receiverId))
         {
-            await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", new
+            foreach (var connectionId in _userConnections[receiverId])
             {
-                MessageId = messageId,
-                SenderId = senderId.Value,
-                ReceiverId = receiverId,
-                Text = text,
-                SentAt = DateTime.UtcNow
-            });
+                await Clients.Client(connectionId).SendAsync("ReceiveMessage", new
+                {
+                    MessageId = messageId,
+                    SenderId = senderId.Value,
+                    ReceiverId = receiverId,
+                    Text = text,
+                    SentAt = DateTime.UtcNow
+                });
+            }
         }
 
         // Also send confirmation to sender
@@ -90,7 +99,7 @@ public class ChatHub : Hub
     /// <summary>
     /// Send a message to all users in a group
     /// </summary>
-    public async Task SendGroupMessage(int groupId, string text)
+    public async Task SendGroupMessage(int groupId, string message)
     {
         var senderId = GetUserId();
         if (!senderId.HasValue)
@@ -98,7 +107,7 @@ public class ChatHub : Hub
             throw new UnauthorizedAccessException("User is not authenticated.");
         }
 
-        // Verify user is a member of the group
+        // Check user belongs to group
         var isUserInGroup = await _unitOfWork.Groups.IsUserInGroupAsync(groupId, senderId.Value);
         if (!isUserInGroup)
         {
@@ -112,59 +121,34 @@ public class ChatHub : Hub
             throw new InvalidOperationException($"Group with ID {groupId} not found.");
         }
 
-        // Get all users in the group
-        var groupUsers = await _unitOfWork.GroupUsers.GetGroupUsersByGroupIdAsync(groupId);
-        if (groupUsers.Count == 0)
+        // Save message to Message table with GroupId
+        var command = new SendMessageCommand
         {
-            throw new InvalidOperationException("Group has no members.");
-        }
+            SenderId = senderId.Value,
+            ReceiverId = 0, // Group message
+            GroupId = groupId,
+            Text = message
+        };
 
-        // Save message to database for each group member (except sender)
-        // For group messages, ReceiverId can be 0 or we can save one message per member
-        // We'll save one message per member for easier querying
-        var messageIds = new List<int>();
-        foreach (var groupUser in groupUsers)
+        var messageId = await _mediator.Send(command);
+
+        // Prepare payload
+        var payload = new
         {
-            if (groupUser.UserId != senderId.Value) // Don't save message for sender
-            {
-                var command = new SendMessageCommand
-                {
-                    SenderId = senderId.Value,
-                    ReceiverId = groupUser.UserId,
-                    GroupId = groupId,
-                    Text = text
-                };
-
-                var messageId = await _mediator.Send(command);
-                messageIds.Add(messageId);
-            }
-        }
-
-        // Also save a message with ReceiverId = 0 for group history (optional)
-        // For now, we'll use the first message ID as the group message ID
-
-        // Broadcast to all users in the group via SignalR
-        await Clients.Group($"group_{groupId}").SendAsync("ReceiveGroupMessage", new
-        {
-            MessageId = messageIds.FirstOrDefault(),
+            MessageId = messageId,
             GroupId = groupId,
             SenderId = senderId.Value,
-            Text = text,
+            Text = message,
             SentAt = DateTime.UtcNow
-        });
+        };
 
-        // Send confirmation to sender
-        await Clients.Caller.SendAsync("GroupMessageSent", new
-        {
-            MessageId = messageIds.FirstOrDefault(),
-            GroupId = groupId,
-            Text = text,
-            SentAt = DateTime.UtcNow
-        });
+        // Send to group: Clients.Group(GetGroupName(groupId)).SendAsync("ReceiveGroupMessage", payload)
+        var groupName = GetGroupName(groupId);
+        await Clients.Group(groupName).SendAsync("ReceiveGroupMessage", payload);
     }
 
     /// <summary>
-    /// Join a specific group chat
+    /// Join a group -> add connection to SignalR group
     /// </summary>
     public async Task JoinGroup(int groupId)
     {
@@ -174,39 +158,32 @@ public class ChatHub : Hub
             throw new UnauthorizedAccessException("User is not authenticated.");
         }
 
-        // Verify user is a member of the group
+        // Check user belongs to group
         var isUserInGroup = await _unitOfWork.Groups.IsUserInGroupAsync(groupId, userId.Value);
         if (!isUserInGroup)
         {
             throw new UnauthorizedAccessException("User is not a member of this group.");
         }
 
-        await Groups.AddToGroupAsync(Context.ConnectionId, $"group_{groupId}");
-        await Clients.Caller.SendAsync("JoinedGroup", new { GroupId = groupId });
+        // Add connection to SignalR group
+        var groupName = GetGroupName(groupId);
+        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+        await Clients.Caller.SendAsync("JoinedGroup", new { GroupId = groupId, GroupName = groupName });
     }
 
     /// <summary>
-    /// Leave a specific group chat
+    /// Leave a group
     /// </summary>
     public async Task LeaveGroup(int groupId)
     {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"group_{groupId}");
-        await Clients.Caller.SendAsync("LeftGroup", new { GroupId = groupId });
+        var groupName = GetGroupName(groupId);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+        await Clients.Caller.SendAsync("LeftGroup", new { GroupId = groupId, GroupName = groupName });
     }
 
-    /// <summary>
-    /// Join all groups that the user belongs to
-    /// </summary>
-    private async Task JoinUserGroupsAsync(int userId)
+    private string GetGroupName(int groupId)
     {
-        // Get all groups the user belongs to
-        var allGroupUsers = await _unitOfWork.GroupUsers.ListAsync();
-        var userGroups = allGroupUsers.Where(gu => gu.UserId == userId).ToList();
-
-        foreach (var groupUser in userGroups)
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"group_{groupUser.GroupId}");
-        }
+        return $"group_{groupId}";
     }
 
     private int? GetUserId()

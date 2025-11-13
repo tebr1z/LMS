@@ -93,7 +93,13 @@ builder.Services.AddAuthentication(options =>
             var path = context.HttpContext.Request.Path;
 
             // If the request is for a SignalR hub and token is in query string
-            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+            // Support all SignalR hubs: /chatHub, /quizHub, /notificationHub, etc.
+            if (!string.IsNullOrEmpty(accessToken) && 
+                (path.StartsWithSegments("/chatHub") || 
+                 path.StartsWithSegments("/quizHub") || 
+                 path.StartsWithSegments("/notificationHub") ||
+                 path.StartsWithSegments("/notificationsHub") ||
+                 path.StartsWithSegments("/hubs")))
             {
                 context.Token = accessToken;
             }
@@ -198,6 +204,7 @@ app.MapControllers();
 // Map SignalR Hubs
 app.MapHub<NotificationHub>("/notificationHub");
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<QuizHub>("/quizHub");
 app.MapHub<LMS.Infrastructure.Services.Notifications.NotificationHub>("/notificationsHub");
 
 app.Run();

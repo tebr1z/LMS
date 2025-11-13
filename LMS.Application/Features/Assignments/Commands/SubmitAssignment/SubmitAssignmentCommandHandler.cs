@@ -69,7 +69,18 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
             // Update existing submission (resubmission allowed)
             existingSubmission.FileUrl = request.FileUrl ?? existingSubmission.FileUrl;
             existingSubmission.AnswerText = request.AnswerText ?? existingSubmission.AnswerText;
-            existingSubmission.TimeOnPageInSeconds = request.TimeOnPageInSeconds ?? existingSubmission.TimeOnPageInSeconds;
+            
+            // Aggregate telemetry time if not provided
+            if (!request.TimeOnPageInSeconds.HasValue || request.TimeOnPageInSeconds.Value == 0)
+            {
+                var totalTelemetryTime = await _unitOfWork.AssignmentTelemetry.GetTotalTimeOnPageBySubmissionAsync(existingSubmission.Id);
+                existingSubmission.TimeOnPageInSeconds = totalTelemetryTime > 0 ? totalTelemetryTime : existingSubmission.TimeOnPageInSeconds;
+            }
+            else
+            {
+                existingSubmission.TimeOnPageInSeconds = request.TimeOnPageInSeconds;
+            }
+            
             existingSubmission.SubmittedAt = now;
             existingSubmission.Score = null; // Reset score if resubmitting
             existingSubmission.Feedback = null;
@@ -83,6 +94,24 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
             return existingSubmission.Id;
         }
 
+        // Aggregate telemetry time if not provided
+        int? aggregatedTime = request.TimeOnPageInSeconds;
+        if (!aggregatedTime.HasValue || aggregatedTime.Value == 0)
+        {
+            // Try to aggregate from telemetry before submission
+            var allTelemetry = await _unitOfWork.AssignmentTelemetry.ListAsync();
+            var preSubmissionTelemetry = allTelemetry
+                .Where(t => t.StudentId == request.StudentId && 
+                           t.AssignmentId == request.AssignmentId &&
+                           t.SubmissionId == null) // Telemetry not yet linked to submission
+                .Sum(t => t.SecondsActive);
+            
+            if (preSubmissionTelemetry > 0)
+            {
+                aggregatedTime = preSubmissionTelemetry;
+            }
+        }
+
         // Create new submission
         var submission = new AssignmentSubmission
         {
@@ -90,12 +119,36 @@ public class SubmitAssignmentCommandHandler : IRequestHandler<SubmitAssignmentCo
             StudentId = request.StudentId,
             FileUrl = request.FileUrl,
             AnswerText = request.AnswerText,
-            TimeOnPageInSeconds = request.TimeOnPageInSeconds,
+            TimeOnPageInSeconds = aggregatedTime,
             SubmittedAt = now,
             CreatedAt = now
         };
 
         await _unitOfWork.AssignmentSubmissions.AddAsync(submission);
+        await _unitOfWork.SaveChangesAsync(); // Save to get submission ID
+
+        // Link pre-submission telemetry to this submission
+        var allTelemetry = await _unitOfWork.AssignmentTelemetry.ListAsync();
+        var preSubmissionTelemetry = allTelemetry
+            .Where(t => t.StudentId == request.StudentId && 
+                       t.AssignmentId == request.AssignmentId &&
+                       t.SubmissionId == null)
+            .ToList();
+
+        foreach (var telemetry in preSubmissionTelemetry)
+        {
+            telemetry.SubmissionId = submission.Id;
+            await _unitOfWork.AssignmentTelemetry.UpdateAsync(telemetry);
+        }
+
+        // Recalculate total time from all linked telemetry
+        if (preSubmissionTelemetry.Any())
+        {
+            var totalTime = await _unitOfWork.AssignmentTelemetry.GetTotalTimeOnPageBySubmissionAsync(submission.Id);
+            submission.TimeOnPageInSeconds = totalTime;
+            await _unitOfWork.AssignmentSubmissions.UpdateAsync(submission);
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
         return submission.Id;

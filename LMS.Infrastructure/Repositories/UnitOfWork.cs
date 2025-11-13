@@ -28,6 +28,8 @@ public class UnitOfWork : IUnitOfWork
     private IStudentFlagRepository? _studentFlags;
     private IPaymentRepository? _payments;
     private IInvoiceRepository? _invoices;
+    private IAssignmentTelemetryRepository? _assignmentTelemetry;
+    private IQuizTelemetryRepository? _quizTelemetry;
 
     public UnitOfWork(LmsDbContext context)
     {
@@ -93,6 +95,12 @@ public class UnitOfWork : IUnitOfWork
 
     public IInvoiceRepository Invoices =>
         _invoices ??= new InvoiceRepository(_context);
+
+    public IAssignmentTelemetryRepository AssignmentTelemetry =>
+        _assignmentTelemetry ??= new AssignmentTelemetryRepository(_context);
+
+    public IQuizTelemetryRepository QuizTelemetry =>
+        _quizTelemetry ??= new QuizTelemetryRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

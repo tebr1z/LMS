@@ -11,6 +11,7 @@ using LMS.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace LMS.Infrastructure.Services;
@@ -21,17 +22,24 @@ public class AuthService : IAuthService
     private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly LmsDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly IEmailNotificationService _emailNotificationService;
+    private readonly ILogger<AuthService> _logger;
+    private static readonly Dictionary<string, int> _failedLoginAttempts = new(); // In-memory tracking (use Redis in production)
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
         RoleManager<ApplicationRole> roleManager,
         LmsDbContext context,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IEmailNotificationService emailNotificationService,
+        ILogger<AuthService> logger)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _context = context;
         _configuration = configuration;
+        _emailNotificationService = emailNotificationService;
+        _logger = logger;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -76,9 +84,71 @@ public class AuthService : IAuthService
         // Assign role to user
         await _userManager.AddToRoleAsync(user, roleName);
 
+        // Generate email verification token
+        var emailVerificationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        
+        // Send email verification email
+        try
+        {
+            var baseUrl = _configuration["AppBaseUrl"] ?? "https://yourlms.com";
+            var verificationUrl = $"{baseUrl}/api/auth/verify-email?userId={user.Id}&token={Uri.EscapeDataString(emailVerificationToken)}";
+            
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _emailNotificationService.SendEmailVerificationAsync(
+                        user.Id,
+                        user.Email!,
+                        user.FullName,
+                        verificationUrl,
+                        CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error sending email verification email to {Email}", user.Email);
+                }
+            }, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing email verification for {Email}", user.Email);
+        }
+
         // Generate tokens
         var token = GenerateJwtToken(user);
         var refreshToken = await GenerateRefreshTokenAsync(user.Id);
+
+        // Send welcome email for new users (after verification email)
+        if (user.Role == UserRole.Student)
+        {
+            try
+            {
+                var baseUrl = _configuration["AppBaseUrl"] ?? "https://yourlms.com";
+                var loginUrl = $"{baseUrl}/login";
+                
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _emailNotificationService.SendWelcomeEmailAsync(
+                            user.Id,
+                            user.Email!,
+                            user.FullName,
+                            loginUrl,
+                            CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error sending welcome email to {Email}", user.Email);
+                    }
+                }, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing welcome email for {Email}", user.Email);
+            }
+        }
 
         return new AuthResponse
         {
@@ -87,7 +157,11 @@ public class AuthService : IAuthService
             ExpiresAt = DateTime.UtcNow.AddMinutes(GetJwtExpirationMinutes()),
             Email = user.Email!,
             FullName = user.FullName,
-            Role = user.Role.ToString()
+            Role = user.Role.ToString(),
+            EmailConfirmed = user.EmailConfirmed,
+            EmailVerificationWarning = !user.EmailConfirmed 
+                ? "Lütfen email adresinizi doğrulayın. Email adresinize doğrulama linki gönderildi." 
+                : null
         };
     }
 
@@ -102,7 +176,54 @@ public class AuthService : IAuthService
         var isValidPassword = await _userManager.CheckPasswordAsync(user, request.Password);
         if (!isValidPassword)
         {
+            // Track failed login attempts
+            var emailKey = request.Email.ToLowerInvariant();
+            if (!_failedLoginAttempts.ContainsKey(emailKey))
+            {
+                _failedLoginAttempts[emailKey] = 0;
+            }
+            _failedLoginAttempts[emailKey]++;
+
+            // Send security alert email after 3 failed attempts
+            if (_failedLoginAttempts[emailKey] >= 3)
+            {
+                try
+                {
+                    var baseUrl = _configuration["AppBaseUrl"] ?? "https://yourlms.com";
+                    var resetPasswordUrl = $"{baseUrl}/reset-password";
+                    
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _emailNotificationService.SendSecurityAlertEmailAsync(
+                                user.Id,
+                                user.Email!,
+                                user.FullName,
+                                _failedLoginAttempts[emailKey],
+                                resetPasswordUrl,
+                                CancellationToken.None);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error sending security alert email to {Email}", user.Email);
+                        }
+                    }, CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing security alert for {Email}", user.Email);
+                }
+            }
+
             throw new UnauthorizedAccessException("Invalid email or password.");
+        }
+
+        // Reset failed login attempts on successful login
+        var emailKey = request.Email.ToLowerInvariant();
+        if (_failedLoginAttempts.ContainsKey(emailKey))
+        {
+            _failedLoginAttempts.Remove(emailKey);
         }
 
         // Get user role from entity
@@ -112,6 +233,11 @@ public class AuthService : IAuthService
         var token = GenerateJwtToken(user);
         var refreshToken = await GenerateRefreshTokenAsync(user.Id);
 
+        // Check if email is confirmed and provide warning
+        var emailVerificationWarning = !user.EmailConfirmed
+            ? "Email adresiniz henüz doğrulanmamış. Lütfen email adresinizi doğrulayın. Doğrulama linki için 'Email Doğrulama' butonunu kullanabilirsiniz."
+            : null;
+
         return new AuthResponse
         {
             Token = token,
@@ -119,7 +245,9 @@ public class AuthService : IAuthService
             ExpiresAt = DateTime.UtcNow.AddMinutes(GetJwtExpirationMinutes()),
             Email = user.Email!,
             FullName = user.FullName,
-            Role = role
+            Role = role,
+            EmailConfirmed = user.EmailConfirmed,
+            EmailVerificationWarning = emailVerificationWarning
         };
     }
 
@@ -162,6 +290,79 @@ public class AuthService : IAuthService
             FullName = user.FullName,
             Role = role
         };
+    }
+
+    public async Task<bool> VerifyEmailAsync(int userId, string token)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found.");
+        }
+
+        if (user.EmailConfirmed)
+        {
+            return true; // Already confirmed
+        }
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Email verification failed for user {UserId}. Errors: {Errors}", 
+                userId, string.Join(", ", result.Errors.Select(e => e.Description)));
+            return false;
+        }
+
+        _logger.LogInformation("Email verified successfully for user {UserId}", userId);
+        return true;
+    }
+
+    public async Task<bool> ResendVerificationEmailAsync(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found.");
+        }
+
+        if (user.EmailConfirmed)
+        {
+            return true; // Already confirmed, no need to resend
+        }
+
+        try
+        {
+            // Generate email verification token
+            var emailVerificationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            
+            var baseUrl = _configuration["AppBaseUrl"] ?? "https://yourlms.com";
+            var verificationUrl = $"{baseUrl}/api/auth/verify-email?userId={user.Id}&token={Uri.EscapeDataString(emailVerificationToken)}";
+            
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _emailNotificationService.SendEmailVerificationAsync(
+                        user.Id,
+                        user.Email!,
+                        user.FullName,
+                        verificationUrl,
+                        CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error resending email verification email to {Email}", user.Email);
+                }
+            }, CancellationToken.None);
+
+            _logger.LogInformation("Email verification email resent to {Email}", email);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resending email verification for {Email}", email);
+            return false;
+        }
     }
 
     public async Task RevokeTokenAsync(string refreshToken)

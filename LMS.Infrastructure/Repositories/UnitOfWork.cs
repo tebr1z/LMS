@@ -42,6 +42,9 @@ public class UnitOfWork : IUnitOfWork
     private IAssignmentFeedbackAIRepository? _assignmentFeedbackAI;
     private ILiveSessionRepository? _liveSessions;
     private ICourseLocalizedRepository? _courseLocalized;
+    private INotificationRuleRepository? _notificationRules;
+    private IEmailTemplateRepository? _emailTemplates;
+    private IEmailLogRepository? _emailLogs;
 
     public UnitOfWork(LmsDbContext context)
     {
@@ -149,6 +152,15 @@ public class UnitOfWork : IUnitOfWork
 
     public ICourseLocalizedRepository CourseLocalized =>
         _courseLocalized ??= new CourseLocalizedRepository(_context);
+
+    public INotificationRuleRepository NotificationRules =>
+        _notificationRules ??= new NotificationRuleRepository(_context);
+
+    public IEmailTemplateRepository EmailTemplates =>
+        _emailTemplates ??= new EmailTemplateRepository(_context);
+
+    public IEmailLogRepository EmailLogs =>
+        _emailLogs ??= new EmailLogRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

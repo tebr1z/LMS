@@ -97,5 +97,67 @@ public class AuthController : ControllerBase
             return StatusCode(500, new { message = _localizer["TokenRevocationError"] });
         }
     }
+
+    /// <summary>
+    /// Verify email address with verification token
+    /// </summary>
+    [HttpGet("verify-email")]
+    [AllowAnonymous]
+    public async Task<ActionResult> VerifyEmail([FromQuery] int userId, [FromQuery] string token)
+    {
+        try
+        {
+            var result = await _authService.VerifyEmailAsync(userId, token);
+            if (result)
+            {
+                return Ok(new { message = "Email adresiniz başarıyla doğrulandı.", success = true });
+            }
+            else
+            {
+                return BadRequest(new { message = "Email doğrulama başarısız. Lütfen doğrulama linkini kontrol edin veya yeni bir link talep edin.", success = false });
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Email verification failed for user {UserId}", userId);
+            return BadRequest(new { message = ex.Message, success = false });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error verifying email for user {UserId}", userId);
+            return StatusCode(500, new { message = "Email doğrulama sırasında bir hata oluştu.", success = false });
+        }
+    }
+
+    /// <summary>
+    /// Resend email verification email
+    /// </summary>
+    [HttpPost("resend-verification-email")]
+    [AllowAnonymous]
+    public async Task<ActionResult> ResendVerificationEmail([FromBody] ResendVerificationEmailRequest request)
+    {
+        try
+        {
+            var result = await _authService.ResendVerificationEmailAsync(request.Email);
+            if (result)
+            {
+                return Ok(new { message = "Doğrulama email'i başarıyla gönderildi. Lütfen email kutunuzu kontrol edin.", success = true });
+            }
+            else
+            {
+                return BadRequest(new { message = "Email gönderme başarısız. Lütfen daha sonra tekrar deneyin.", success = false });
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Resend verification email failed for {Email}", request.Email);
+            return BadRequest(new { message = ex.Message, success = false });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resending verification email for {Email}", request.Email);
+            return StatusCode(500, new { message = "Email gönderme sırasında bir hata oluştu.", success = false });
+        }
+    }
 }
 

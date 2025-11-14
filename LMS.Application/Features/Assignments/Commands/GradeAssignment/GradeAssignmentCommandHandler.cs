@@ -11,17 +11,20 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
     private readonly IUserRepository _userRepository;
     private readonly ISettingsService _settingsService;
     private readonly IAuditService _auditService;
+    private readonly IEmailNotificationService _emailNotificationService;
 
     public GradeAssignmentCommandHandler(
         IUnitOfWork unitOfWork,
         IUserRepository userRepository,
         ISettingsService settingsService,
-        IAuditService auditService)
+        IAuditService auditService,
+        IEmailNotificationService emailNotificationService)
     {
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
         _settingsService = settingsService;
         _auditService = auditService;
+        _emailNotificationService = emailNotificationService;
     }
 
     public async Task<bool> Handle(GradeAssignmentCommand request, CancellationToken cancellationToken)
@@ -135,6 +138,19 @@ public class GradeAssignmentCommandHandler : IRequestHandler<GradeAssignmentComm
 
         // Update student stats
         await UpdateStudentStatsAsync(submission.StudentId, assignment.CourseInstanceId);
+
+        // Send grade posted email notification
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _emailNotificationService.SendGradePostedEmailAsync(submission.Id, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                // Log but don't throw - email sending shouldn't block grading
+            }
+        }, cancellationToken);
 
         return true;
     }

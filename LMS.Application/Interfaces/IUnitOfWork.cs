@@ -36,6 +36,9 @@ public interface IUnitOfWork : IDisposable
     IAssignmentFeedbackAIRepository AssignmentFeedbackAI { get; }
     ILiveSessionRepository LiveSessions { get; }
     ICourseLocalizedRepository CourseLocalized { get; }
+    INotificationRuleRepository NotificationRules { get; }
+    IEmailTemplateRepository EmailTemplates { get; }
+    IEmailLogRepository EmailLogs { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

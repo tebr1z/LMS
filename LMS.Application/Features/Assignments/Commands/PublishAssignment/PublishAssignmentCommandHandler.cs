@@ -8,11 +8,16 @@ public class PublishAssignmentCommandHandler : IRequestHandler<PublishAssignment
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository;
+    private readonly IEmailNotificationService _emailNotificationService;
 
-    public PublishAssignmentCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
+    public PublishAssignmentCommandHandler(
+        IUnitOfWork unitOfWork,
+        IUserRepository userRepository,
+        IEmailNotificationService emailNotificationService)
     {
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
+        _emailNotificationService = emailNotificationService;
     }
 
     public async Task<bool> Handle(PublishAssignmentCommand request, CancellationToken cancellationToken)
@@ -46,6 +51,23 @@ public class PublishAssignmentCommandHandler : IRequestHandler<PublishAssignment
 
         await _unitOfWork.Assignments.UpdateAsync(assignment);
         await _unitOfWork.SaveChangesAsync();
+
+        // Send email notifications to all students in the group
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _emailNotificationService.SendNewAssignmentEmailAsync(
+                    assignment.Id,
+                    assignment.CourseInstanceId,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                // Log but don't throw - email sending shouldn't block assignment publishing
+                // Logger would be injected if needed
+            }
+        }, cancellationToken);
 
         return true;
     }

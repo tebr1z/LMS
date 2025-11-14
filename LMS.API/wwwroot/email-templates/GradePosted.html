@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Posted</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 30px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">✅ Grade Posted</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <p style="font-size: 16px; color: #333333; margin: 0 0 20px 0;">Hello <strong style="color: #28a745;">{StudentName}</strong>,</p>
+                            
+                            <p style="font-size: 16px; color: #666666; line-height: 1.6; margin: 0 0 20px 0;">
+                                Your assignment <strong style="color: #333333;">{AssignmentTitle}</strong> has been graded by <strong style="color: #28a745;">{TeacherName}</strong>.
+                            </p>
+                            
+                            <!-- Grade Card -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-radius: 6px; padding: 25px; margin: 20px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <p style="margin: 0 0 15px 0; font-size: 32px; font-weight: bold; color: #155724;">{Score} / {MaxScore}</p>
+                                        <p style="margin: 0 0 10px 0; font-size: 24px; font-weight: bold; color: #155724;">{PercentageScore}%</p>
+                                        {#if Passed}
+                                        <p style="margin: 10px 0 0 0; font-size: 16px; color: #155724; font-weight: bold;">✓ Passed</p>
+                                        {/if}
+                                        {#if IsExcellent}
+                                        <p style="margin: 5px 0 0 0; font-size: 14px; color: #856404;">⭐ Excellent Work!</p>
+                                        {/if}
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            {#if Feedback}
+                            <div style="background-color: #e7f3ff; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                                <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333; font-weight: bold;">💬 Feedback:</p>
+                                <p style="margin: 0; font-size: 14px; color: #666666; line-height: 1.6;">{Feedback}</p>
+                            </div>
+                            {/if}
+                            
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{AssignmentUrl}" style="display: inline-block; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);">View Assignment</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
+                            <p style="margin: 0; font-size: 12px; color: #666666;">This is an automated notification from LMS.</p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px; color: #999999;">© {Year} LMS Team. All rights reserved.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+
+

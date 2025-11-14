@@ -26,6 +26,8 @@ public static class DependencyInjection
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAdaptiveLearningService, AdaptiveLearningService>();
         services.AddScoped<IAchievementEngine, AchievementEngine>();
+        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        services.AddScoped<IEmailNotificationService, EmailNotificationService>();
         services.AddScoped<ILiveSessionService>(sp =>
         {
             var unitOfWork = sp.GetRequiredService<IUnitOfWork>();

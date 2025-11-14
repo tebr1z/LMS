@@ -63,6 +63,7 @@ builder.Services.AddHostedService<LMS.Infrastructure.Services.Background.Student
 builder.Services.AddHostedService<LMS.Infrastructure.Services.Background.AdaptiveLearningBackgroundService>();
 builder.Services.AddHostedService<LMS.Infrastructure.Services.Background.AchievementBackgroundService>();
 builder.Services.AddHostedService<LMS.Infrastructure.Services.Background.AIFeedbackBackgroundService>();
+builder.Services.AddHostedService<LMS.Infrastructure.Services.Background.NotificationSchedulerService>();
 
 // Configure JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured");

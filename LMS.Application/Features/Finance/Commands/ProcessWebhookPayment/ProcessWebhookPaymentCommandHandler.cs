@@ -40,9 +40,13 @@ public class ProcessWebhookPaymentCommandHandler : IRequestHandler<ProcessWebhoo
                         await _unitOfWork.Invoices.UpdateAsync(invoice);
                     }
                 }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                // Award reward points for on-time payment
+                await AwardRewardPointsForOnTimePaymentAsync(existingPayment, cancellationToken);
             }
 
-            await _unitOfWork.SaveChangesAsync();
             return true;
         }
 
@@ -89,7 +93,41 @@ public class ProcessWebhookPaymentCommandHandler : IRequestHandler<ProcessWebhoo
         await _unitOfWork.Payments.UpdateAsync(payment);
         await _unitOfWork.SaveChangesAsync();
 
+        // Award reward points for on-time payment
+        await AwardRewardPointsForOnTimePaymentAsync(payment, cancellationToken);
+
         return true;
+    }
+
+    private async Task AwardRewardPointsForOnTimePaymentAsync(Domain.Entities.Payment payment, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Check if payment was made on time (PaidAt <= DueDate)
+            if (payment.PaidAt.HasValue && payment.DueDate.HasValue)
+            {
+                if (payment.PaidAt.Value <= payment.DueDate.Value)
+                {
+                    // Payment was on time - award 50 reward points
+                    var rewardPoint = new Domain.Entities.RewardPoint
+                    {
+                        UserId = payment.StudentId,
+                        Points = 50,
+                        Reason = $"On-time payment reward: Payment #{payment.Id} completed on or before due date",
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _unitOfWork.RewardPoints.AddAsync(rewardPoint);
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                }
+                // If PaidAt > DueDate, no points are awarded
+            }
+        }
+        catch (Exception)
+        {
+            // Don't fail payment processing if reward points fail
+            // Log error but continue
+        }
     }
 }
 

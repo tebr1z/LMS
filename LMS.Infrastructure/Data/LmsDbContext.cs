@@ -49,6 +49,9 @@ public class LmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<AssignmentFeedbackAI> AssignmentFeedbackAI { get; set; } = null!;
     public DbSet<LiveSession> LiveSessions { get; set; } = null!;
     public DbSet<CourseLocalized> CourseLocalized { get; set; } = null!;
+    public DbSet<NotificationRule> NotificationRules { get; set; } = null!;
+    public DbSet<EmailTemplate> EmailTemplates { get; set; } = null!;
+    public DbSet<EmailLog> EmailLogs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

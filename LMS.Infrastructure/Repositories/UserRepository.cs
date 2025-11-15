@@ -1,6 +1,7 @@
 using LMS.Application.Interfaces;
 using LMS.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace LMS.Infrastructure.Repositories;
 
@@ -30,7 +31,8 @@ public class UserRepository : IUserRepository
             Id = user.Id,
             FullName = user.FullName,
             Role = user.Role,
-            Email = user.Email ?? string.Empty
+            Email = user.Email ?? string.Empty,
+            CreatedAt = user.CreatedAt
         };
     }
 
@@ -48,7 +50,30 @@ public class UserRepository : IUserRepository
             Id = user.Id,
             FullName = user.FullName,
             Role = user.Role,
-            Email = user.Email ?? string.Empty
+            Email = user.Email ?? string.Empty,
+            CreatedAt = user.CreatedAt
+        }).ToList();
+    }
+
+    public async Task<List<UserDetails>> GetUsersByIdsAsync(IEnumerable<int> userIds)
+    {
+        var ids = userIds?.Distinct().ToList() ?? new List<int>();
+        if (!ids.Any())
+        {
+            return new List<UserDetails>();
+        }
+
+        var users = await _userManager.Users
+            .Where(u => ids.Contains(u.Id))
+            .ToListAsync();
+
+        return users.Select(user => new UserDetails
+        {
+            Id = user.Id,
+            FullName = user.FullName,
+            Role = user.Role,
+            Email = user.Email ?? string.Empty,
+            CreatedAt = user.CreatedAt
         }).ToList();
     }
 }

@@ -102,7 +102,7 @@ public class NotificationSchedulerService : BackgroundService
                                 };
 
                                 await unitOfWork.Notifications.AddAsync(notification);
-                                await unitOfWork.SaveChangesAsync(cancellationToken);
+                                await unitOfWork.SaveChangesAsync();
 
                                 // Send real-time notification via SignalR
                                 var notificationMessage = new NotificationMessage
@@ -217,7 +217,7 @@ public class NotificationSchedulerService : BackgroundService
 
     private async Task<List<UserMatchInfo>> EvaluateInactiveDaysRule(
         RuleCondition condition,
-        List<Domain.Entities.ApplicationUser> targetUsers,
+        List<UserDetails> targetUsers,
         IUnitOfWork unitOfWork,
         CancellationToken cancellationToken)
     {
@@ -233,30 +233,29 @@ public class NotificationSchedulerService : BackgroundService
         {
             // Find last activity (submission or quiz session)
             var lastSubmission = allSubmissions
-                .Where(s => s.StudentId == user.Id && s.SubmittedAt.HasValue)
+                .Where(s => s.StudentId == user.Id)
                 .OrderByDescending(s => s.SubmittedAt)
                 .FirstOrDefault();
 
             var lastQuizSession = allQuizSessions
-                .Where(qs => qs.StudentId == user.Id && qs.StartedAt.HasValue)
+                .Where(qs => qs.StudentId == user.Id)
                 .OrderByDescending(qs => qs.StartedAt)
                 .FirstOrDefault();
 
             DateTime? lastActivity = null;
 
-            if (lastSubmission?.SubmittedAt != null && lastQuizSession?.StartedAt != null)
+            var lastSubmissionDate = lastSubmission?.SubmittedAt;
+            var lastQuizSessionDate = lastQuizSession?.StartedAt;
+
+            if (lastSubmissionDate.HasValue && lastQuizSessionDate.HasValue)
             {
-                lastActivity = lastSubmission.SubmittedAt.Value > lastQuizSession.StartedAt.Value
-                    ? lastSubmission.SubmittedAt.Value
-                    : lastQuizSession.StartedAt.Value;
+                lastActivity = lastSubmissionDate > lastQuizSessionDate
+                    ? lastSubmissionDate
+                    : lastQuizSessionDate;
             }
-            else if (lastSubmission?.SubmittedAt != null)
+            else
             {
-                lastActivity = lastSubmission.SubmittedAt.Value;
-            }
-            else if (lastQuizSession?.StartedAt != null)
-            {
-                lastActivity = lastQuizSession.StartedAt.Value;
+                lastActivity = lastSubmissionDate ?? lastQuizSessionDate;
             }
 
             // Check if user is inactive
@@ -264,7 +263,7 @@ public class NotificationSchedulerService : BackgroundService
             {
                 var daysInactive = lastActivity.HasValue
                     ? (int)(DateTime.UtcNow - lastActivity.Value).TotalDays
-                    : (int)(DateTime.UtcNow - user.CreatedAt).TotalDays;
+                    : (int)(DateTime.UtcNow - (user.CreatedAt ?? DateTime.UtcNow)).TotalDays;
 
                 usersToNotify.Add(new UserMatchInfo
                 {
@@ -279,7 +278,7 @@ public class NotificationSchedulerService : BackgroundService
 
     private async Task<List<UserMatchInfo>> EvaluateDeadlineApproachingRule(
         RuleCondition condition,
-        List<Domain.Entities.ApplicationUser> targetUsers,
+        List<UserDetails> targetUsers,
         IUnitOfWork unitOfWork,
         CancellationToken cancellationToken)
     {
@@ -365,7 +364,7 @@ public class NotificationSchedulerService : BackgroundService
 
     private async Task<List<UserMatchInfo>> EvaluateLowAverageScoreRule(
         RuleCondition condition,
-        List<Domain.Entities.ApplicationUser> targetUsers,
+        List<UserDetails> targetUsers,
         IUnitOfWork unitOfWork,
         CancellationToken cancellationToken)
     {

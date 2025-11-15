@@ -1,8 +1,8 @@
 using LMS.Application.Interfaces;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using LMS.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using System.Text;
+using IOFile = System.IO.File;
 
 namespace LMS.Infrastructure.Services;
 
@@ -13,16 +13,15 @@ public class EmailTemplateService : IEmailTemplateService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<EmailTemplateService> _logger;
-    private readonly IWebHostEnvironment? _webHostEnvironment;
+    private readonly string _templateRootPath;
 
     public EmailTemplateService(
         IUnitOfWork unitOfWork,
-        ILogger<EmailTemplateService> logger,
-        IWebHostEnvironment? webHostEnvironment = null)
+        ILogger<EmailTemplateService> logger)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
-        _webHostEnvironment = webHostEnvironment;
+        _templateRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot", "email-templates");
     }
 
     public async Task<(string Subject, string HtmlBody)> RenderTemplateAsync(
@@ -30,8 +29,15 @@ public class EmailTemplateService : IEmailTemplateService
         Dictionary<string, string> data,
         CancellationToken cancellationToken = default)
     {
-        // Get template from database
-        var template = await _unitOfWork.EmailTemplates.GetByTemplateTypeAsync(templateType, cancellationToken);
+        EmailTemplate? template = null;
+        try
+        {
+            template = await _unitOfWork.EmailTemplates.GetByTemplateTypeAsync(templateType, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Unable to load email template {TemplateType} from database. Falling back to defaults.", templateType);
+        }
 
         if (template == null)
         {
@@ -63,15 +69,12 @@ public class EmailTemplateService : IEmailTemplateService
         try
         {
             // Try to read template from wwwroot/email-templates/{templateType}.html
-            if (_webHostEnvironment != null && !string.IsNullOrEmpty(_webHostEnvironment.WebRootPath))
-            {
-                var templatePath = Path.Combine(_webHostEnvironment.WebRootPath, "email-templates", $"{templateType}.html");
+            var templatePath = Path.Combine(_templateRootPath, $"{templateType}.html");
 
-                if (File.Exists(templatePath))
-                {
-                    var templateContent = await File.ReadAllTextAsync(templatePath, cancellationToken);
-                    return RenderString(templateContent, data);
-                }
+            if (IOFile.Exists(templatePath))
+            {
+                var templateContent = await IOFile.ReadAllTextAsync(templatePath, cancellationToken);
+                return RenderString(templateContent, data);
             }
 
             // If file doesn't exist, return empty string to use database template

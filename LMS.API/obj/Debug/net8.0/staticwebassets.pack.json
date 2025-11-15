@@ -1,0 +1,49 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.API\\wwwroot\\email-templates\\DeadlineReminder.html",
+      "PackagePath": "staticwebassets\\email-templates\\DeadlineReminder.html"
+    },
+    {
+      "Id": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.API\\wwwroot\\email-templates\\EmailVerification.html",
+      "PackagePath": "staticwebassets\\email-templates\\EmailVerification.html"
+    },
+    {
+      "Id": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.API\\wwwroot\\email-templates\\GradePosted.html",
+      "PackagePath": "staticwebassets\\email-templates\\GradePosted.html"
+    },
+    {
+      "Id": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.API\\wwwroot\\email-templates\\NewAssignment.html",
+      "PackagePath": "staticwebassets\\email-templates\\NewAssignment.html"
+    },
+    {
+      "Id": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.API\\wwwroot\\email-templates\\PaymentReminder.html",
+      "PackagePath": "staticwebassets\\email-templates\\PaymentReminder.html"
+    },
+    {
+      "Id": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.API\\wwwroot\\email-templates\\SecurityAlert.html",
+      "PackagePath": "staticwebassets\\email-templates\\SecurityAlert.html"
+    },
+    {
+      "Id": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.API\\wwwroot\\email-templates\\Welcome.html",
+      "PackagePath": "staticwebassets\\email-templates\\Welcome.html"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.LMS.API.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.LMS.API.props",
+      "PackagePath": "build\\LMS.API.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.LMS.API.props",
+      "PackagePath": "buildMultiTargeting\\LMS.API.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.LMS.API.props",
+      "PackagePath": "buildTransitive\\LMS.API.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

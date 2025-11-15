@@ -188,3 +188,7 @@ C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\LMS.API.Res
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\LMS.API.Resources.Controllers.AssignmentsController.en.resources
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\obj\Debug\net8.0\LMS.API.Resources.Controllers.GroupsController.tr.resources
 C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\LMS.API.staticwebassets.runtime.json
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\MailKit.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\MimeKit.dll
+C:\Users\Windows 11\Desktop\Github Repo\LMS\LMS.API\bin\Debug\net8.0\System.Formats.Asn1.dll

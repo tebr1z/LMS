@@ -92,23 +92,13 @@ public class AuthService : IAuthService
         {
             var baseUrl = _configuration["AppBaseUrl"] ?? "https://yourlms.com";
             var verificationUrl = $"{baseUrl}/api/auth/verify-email?userId={user.Id}&token={Uri.EscapeDataString(emailVerificationToken)}";
-            
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await _emailNotificationService.SendEmailVerificationAsync(
-                        user.Id,
-                        user.Email!,
-                        user.FullName,
-                        verificationUrl,
-                        CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error sending email verification email to {Email}", user.Email);
-                }
-            }, CancellationToken.None);
+
+            await _emailNotificationService.SendEmailVerificationAsync(
+                user.Id,
+                user.Email!,
+                user.FullName,
+                verificationUrl,
+                CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -126,23 +116,13 @@ public class AuthService : IAuthService
             {
                 var baseUrl = _configuration["AppBaseUrl"] ?? "https://yourlms.com";
                 var loginUrl = $"{baseUrl}/login";
-                
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await _emailNotificationService.SendWelcomeEmailAsync(
-                            user.Id,
-                            user.Email!,
-                            user.FullName,
-                            loginUrl,
-                            CancellationToken.None);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error sending welcome email to {Email}", user.Email);
-                    }
-                }, CancellationToken.None);
+
+                await _emailNotificationService.SendWelcomeEmailAsync(
+                    user.Id,
+                    user.Email!,
+                    user.FullName,
+                    loginUrl,
+                    CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -174,10 +154,10 @@ public class AuthService : IAuthService
         }
 
         var isValidPassword = await _userManager.CheckPasswordAsync(user, request.Password);
+        var emailKey = request.Email.ToLowerInvariant();
         if (!isValidPassword)
         {
             // Track failed login attempts
-            var emailKey = request.Email.ToLowerInvariant();
             if (!_failedLoginAttempts.ContainsKey(emailKey))
             {
                 _failedLoginAttempts[emailKey] = 0;
@@ -191,24 +171,14 @@ public class AuthService : IAuthService
                 {
                     var baseUrl = _configuration["AppBaseUrl"] ?? "https://yourlms.com";
                     var resetPasswordUrl = $"{baseUrl}/reset-password";
-                    
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await _emailNotificationService.SendSecurityAlertEmailAsync(
-                                user.Id,
-                                user.Email!,
-                                user.FullName,
-                                _failedLoginAttempts[emailKey],
-                                resetPasswordUrl,
-                                CancellationToken.None);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error sending security alert email to {Email}", user.Email);
-                        }
-                    }, CancellationToken.None);
+
+                    await _emailNotificationService.SendSecurityAlertEmailAsync(
+                        user.Id,
+                        user.Email!,
+                        user.FullName,
+                        _failedLoginAttempts[emailKey],
+                        resetPasswordUrl,
+                        CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
@@ -220,7 +190,6 @@ public class AuthService : IAuthService
         }
 
         // Reset failed login attempts on successful login
-        var emailKey = request.Email.ToLowerInvariant();
         if (_failedLoginAttempts.ContainsKey(emailKey))
         {
             _failedLoginAttempts.Remove(emailKey);
@@ -337,23 +306,13 @@ public class AuthService : IAuthService
             
             var baseUrl = _configuration["AppBaseUrl"] ?? "https://yourlms.com";
             var verificationUrl = $"{baseUrl}/api/auth/verify-email?userId={user.Id}&token={Uri.EscapeDataString(emailVerificationToken)}";
-            
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await _emailNotificationService.SendEmailVerificationAsync(
-                        user.Id,
-                        user.Email!,
-                        user.FullName,
-                        verificationUrl,
-                        CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error resending email verification email to {Email}", user.Email);
-                }
-            }, CancellationToken.None);
+
+            await _emailNotificationService.SendEmailVerificationAsync(
+                user.Id,
+                user.Email!,
+                user.FullName,
+                verificationUrl,
+                CancellationToken.None);
 
             _logger.LogInformation("Email verification email resent to {Email}", email);
             return true;

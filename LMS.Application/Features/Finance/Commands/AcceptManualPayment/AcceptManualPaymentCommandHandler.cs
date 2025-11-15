@@ -84,7 +84,7 @@ public class AcceptManualPaymentCommandHandler : IRequestHandler<AcceptManualPay
                     };
 
                     await _unitOfWork.RewardPoints.AddAsync(rewardPoint);
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                    await _unitOfWork.SaveChangesAsync();
                 }
                 // If PaidAt > DueDate, no points are awarded
             }

@@ -53,13 +53,18 @@ public class PublishAssignmentCommandHandler : IRequestHandler<PublishAssignment
         await _unitOfWork.SaveChangesAsync();
 
         // Send email notifications to all students in the group
+        if (!assignment.CourseInstanceId.HasValue)
+        {
+            throw new InvalidOperationException("Assignment is missing a CourseInstanceId; cannot notify students.");
+        }
+
         _ = Task.Run(async () =>
         {
             try
             {
                 await _emailNotificationService.SendNewAssignmentEmailAsync(
                     assignment.Id,
-                    assignment.CourseInstanceId,
+                    assignment.CourseInstanceId.Value,
                     cancellationToken);
             }
             catch (Exception ex)

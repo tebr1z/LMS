@@ -48,15 +48,12 @@ public class GetTeacherDashboardQueryHandler : IRequestHandler<GetTeacherDashboa
 
         // Count late submissions (submissions where SubmittedAt > Deadline)
         int lateSubmissions = 0;
-        foreach (var submission in teacherSubmissions.Where(s => s.SubmittedAt.HasValue))
+        foreach (var submission in teacherSubmissions)
         {
             var assignment = teacherAssignments.FirstOrDefault(a => a.Id == submission.AssignmentId);
-            if (assignment != null && assignment.Deadline.HasValue && submission.SubmittedAt.HasValue)
+            if (assignment?.Deadline.HasValue == true && submission.SubmittedAt > assignment.Deadline.Value)
             {
-                if (submission.SubmittedAt.Value > assignment.Deadline.Value)
-                {
-                    lateSubmissions++;
-                }
+                lateSubmissions++;
             }
         }
 
@@ -177,9 +174,7 @@ public class GetTeacherDashboardQueryHandler : IRequestHandler<GetTeacherDashboa
                 var targetDayOfWeek = dayOfWeekMapping[i];
 
                 var daySubmissions = teacherSubmissions
-                    .Where(s => s.SubmittedAt.HasValue && 
-                                s.SubmittedAt.Value.DayOfWeek == targetDayOfWeek)
-                    .Count();
+                    .Count(s => s.SubmittedAt.DayOfWeek == targetDayOfWeek);
 
                 // Approximate 30 minutes per submission
                 int minutes = daySubmissions * 30;

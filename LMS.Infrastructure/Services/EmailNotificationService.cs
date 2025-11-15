@@ -122,7 +122,7 @@ public class EmailNotificationService : IEmailNotificationService
                     cancellationToken);
             }
 
-            _logger.LogInformation("New assignment emails sent for assignment {AssignmentId} to {Count} students", assignmentId, studentsList.Count);
+            _logger.LogInformation(eventId: default, "New assignment emails sent for assignment {AssignmentId} to {Count} students", assignmentId, studentsList.Count);
         }
         catch (Exception ex)
         {

@@ -1,5 +1,4 @@
 using LMS.Application.Interfaces;
-using LMS.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -65,9 +64,8 @@ public class GetEfficiencyQueryHandler : IRequestHandler<GetEfficiencyQuery, Lis
             .Select(g => new
             {
                 StudentId = g.Key,
-                Submissions = g.ToList(),
                 AverageScore = g.Average(s => s.PercentageScore),
-                AvgTimeOnPageInSeconds = g.Average(s => s.TimeOnPageInSeconds!.Value),
+                AvgTimeOnPageInSeconds = g.Average(s => (decimal)s.TimeOnPageInSeconds!.Value),
                 SubmissionCount = g.Count()
             })
             .Where(x => x.AvgTimeOnPageInSeconds > 0) // Avoid division by zero
@@ -75,10 +73,10 @@ public class GetEfficiencyQueryHandler : IRequestHandler<GetEfficiencyQuery, Lis
             {
                 StudentId = x.StudentId,
                 StudentName = allUsers.FirstOrDefault(u => u.Id == x.StudentId)?.FullName ?? "Unknown",
-                AverageScore = Math.Round((decimal)x.AverageScore, 2),
-                AvgTimeOnPageInMinutes = Math.Round((decimal)(x.AvgTimeOnPageInSeconds / 60.0), 2), // Convert seconds to minutes
+                AverageScore = Math.Round(x.AverageScore, 2),
+                AvgTimeOnPageInMinutes = Math.Round(x.AvgTimeOnPageInSeconds / 60m, 2), // Convert seconds to minutes
                 EfficiencyScore = x.AvgTimeOnPageInSeconds > 0
-                    ? Math.Round((decimal)(x.AverageScore / (x.AvgTimeOnPageInSeconds / 60.0)), 4) // EfficiencyScore = AverageScore / AvgTimeOnPageInMinutes
+                    ? Math.Round(x.AverageScore / (x.AvgTimeOnPageInSeconds / 60m), 4) // EfficiencyScore = AverageScore / AvgTimeOnPageInMinutes
                     : 0,
                 SubmissionCount = x.SubmissionCount
             })

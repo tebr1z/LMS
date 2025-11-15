@@ -3,8 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Infrastructure\\Migrations\\20251113144236_AddAssigmentFeedBack.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:LMS.Infrastructure\\Migrations\\20251113144236_AddAssigmentFeedBack.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Infrastructure\\Migrations\\20251114194042_Notifcation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:LMS.Infrastructure\\Migrations\\20251114194042_Notifcation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AB299637-BF0F-459E-B509-018EFEA31854}|LMS.Infrastructure\\LMS.Infrastructure.csproj|c:\\users\\windows 11\\desktop\\github repo\\lms\\lms.infrastructure\\migrations\\20251113144236_addassigmentfeedback.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AB299637-BF0F-459E-B509-018EFEA31854}|LMS.Infrastructure\\LMS.Infrastructure.csproj|solutionrelative:lms.infrastructure\\migrations\\20251113144236_addassigmentfeedback.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{AB299637-BF0F-459E-B509-018EFEA31854}|LMS.Infrastructure\\LMS.Infrastructure.csproj|c:\\users\\windows 11\\desktop\\github repo\\lms\\lms.infrastructure\\dependencyinjection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -51,6 +55,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "20251114194042_Notifcation.cs",
+              "DocumentMoniker": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Infrastructure\\Migrations\\20251114194042_Notifcation.cs",
+              "RelativeDocumentMoniker": "LMS.Infrastructure\\Migrations\\20251114194042_Notifcation.cs",
+              "ToolTip": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Infrastructure\\Migrations\\20251114194042_Notifcation.cs",
+              "RelativeToolTip": "LMS.Infrastructure\\Migrations\\20251114194042_Notifcation.cs",
+              "ViewState": "AQIAAAsAAAAAAAAAAAAAwAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-14T19:40:42.672Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "20251113144236_AddAssigmentFeedBack.cs",
               "DocumentMoniker": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Infrastructure\\Migrations\\20251113144236_AddAssigmentFeedBack.cs",
               "RelativeDocumentMoniker": "LMS.Infrastructure\\Migrations\\20251113144236_AddAssigmentFeedBack.cs",
@@ -63,7 +80,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "DependencyInjection.cs",
               "DocumentMoniker": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Infrastructure\\DependencyInjection.cs",
               "RelativeDocumentMoniker": "LMS.Infrastructure\\DependencyInjection.cs",
@@ -71,12 +88,11 @@
               "RelativeToolTip": "LMS.Infrastructure\\DependencyInjection.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAACgAAAARAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-13T14:41:58.586Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-13T14:41:58.586Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "20251113115005_AddNotificationsAndStats.cs",
               "DocumentMoniker": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Infrastructure\\Migrations\\20251113115005_AddNotificationsAndStats.cs",
               "RelativeDocumentMoniker": "LMS.Infrastructure\\Migrations\\20251113115005_AddNotificationsAndStats.cs",
@@ -84,12 +100,11 @@
               "RelativeToolTip": "LMS.Infrastructure\\Migrations\\20251113115005_AddNotificationsAndStats.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-13T11:50:05.401Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-13T11:50:05.401Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "20251113114224_AddNotificationsAndStats.cs",
               "DocumentMoniker": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Infrastructure\\Migrations\\20251113114224_AddNotificationsAndStats.cs",
               "RelativeDocumentMoniker": "LMS.Infrastructure\\Migrations\\20251113114224_AddNotificationsAndStats.cs",
@@ -101,7 +116,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "20251112205444_InitialCreate.cs",
               "DocumentMoniker": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Infrastructure\\Migrations\\20251112205444_InitialCreate.cs",
               "RelativeDocumentMoniker": "LMS.Infrastructure\\Migrations\\20251112205444_InitialCreate.cs",
@@ -113,7 +128,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.API\\appsettings.json",
               "RelativeDocumentMoniker": "LMS.API\\appsettings.json",
@@ -125,7 +140,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "DesignTimeDbContextFactory.cs",
               "DocumentMoniker": "C:\\Users\\Windows 11\\Desktop\\Github Repo\\LMS\\LMS.Infrastructure\\Data\\DesignTimeDbContextFactory.cs",
               "RelativeDocumentMoniker": "LMS.Infrastructure\\Data\\DesignTimeDbContextFactory.cs",

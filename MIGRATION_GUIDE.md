@@ -21,8 +21,8 @@ dotnet ef migrations list
 ### Adım 4: Yeni Migration Oluşturun
 ```powershell
 Add-Migration AddNotificationsAndStats -Project LMS.Infrastructure -StartupProject LMS.API
-```
-Add-Migration AddAssigmentFeedBack -Project LMS.Infrastructure -StartupProject LMS.API
+```Add-Migration  -Project LMS.Infrastructure -StartupProject 
+Add-Migration Notifcation -Project LMS.Infrastructure -StartupProject LMS.API
 **Açıklama:**
 - `AddNotificationsAndStats` = Migration adı (istediğiniz ismi verebilirsiniz)
 - `-Project LMS.Infrastructure` = Migration dosyalarının oluşturulacağı proje

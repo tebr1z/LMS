@@ -50,7 +50,7 @@ public class EmailService : IEmailService
                 _logger.LogWarning("Email configuration is incomplete. Email not sent to {To}", to);
                 
                 // Log as failed
-                await LogEmailAsync(to, subject, body, "Failed", "Email configuration is incomplete", null, null, null, cancellationToken);
+                await LogEmailAsync(to, subject, body, "Failed", "Email configuration is incomplete", null, null, null, null, cancellationToken);
                 return false;
             }
 
@@ -73,7 +73,7 @@ public class EmailService : IEmailService
 
             // Send email via SMTP
             using var client = new SmtpClient();
-            await client.ConnectAsync(emailHost, emailPort, enableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None, cancellationToken);
+            await client.ConnectAsync(emailHost, emailPort, GetSecureSocketOptions(enableSsl, emailPort), cancellationToken);
             await client.AuthenticateAsync(emailUser, emailPassword, cancellationToken);
             await client.SendAsync(message, cancellationToken);
             await client.DisconnectAsync(true, cancellationToken);
@@ -161,7 +161,7 @@ public class EmailService : IEmailService
             message.Body = bodyBuilder.ToMessageBody();
 
             using var client = new SmtpClient();
-            await client.ConnectAsync(emailHost, emailPort, enableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None, cancellationToken);
+            await client.ConnectAsync(emailHost, emailPort, GetSecureSocketOptions(enableSsl, emailPort), cancellationToken);
             await client.AuthenticateAsync(emailUser, emailPassword, cancellationToken);
             await client.SendAsync(message, cancellationToken);
             await client.DisconnectAsync(true, cancellationToken);
@@ -212,12 +212,24 @@ public class EmailService : IEmailService
             };
 
             await _unitOfWork.EmailLogs.AddAsync(emailLog);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error logging email to {To}", to);
         }
+    }
+
+    private static SecureSocketOptions GetSecureSocketOptions(bool enableSsl, int port)
+    {
+        if (!enableSsl)
+        {
+            return SecureSocketOptions.None;
+        }
+
+        return port == 465
+            ? SecureSocketOptions.SslOnConnect
+            : SecureSocketOptions.StartTls;
     }
 }
 
